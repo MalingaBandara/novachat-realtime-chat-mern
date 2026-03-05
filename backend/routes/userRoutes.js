@@ -98,3 +98,6 @@ const generateToken = (id) => {
     );
 
 };
+
+
+module.exports = userRouter; //! Exporting the router to be used in main server file
