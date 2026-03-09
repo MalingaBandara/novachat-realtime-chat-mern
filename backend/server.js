@@ -44,7 +44,7 @@ app.use(express.json()); //? Parse incoming JSON request bodies
 //* DATABASE CONNECTION
 //* ============================================
 //! Connect to MongoDB database
-mongoose.connect('mongo url')
+mongoose.connect( process.env.MONGO_URL )
     .then(() => console.log('Connected to DB')) //? Success message
     .catch(err => console.log('Error connecting to DB', err)); //? Error handling
 
@@ -57,7 +57,7 @@ socketIo(io);
 
 
 //* ============================================
-//* API ROUTES
+//* API ROUTESS
 //* ============================================
 //? All user-related routes will start with /api/users
 app.use('/api/users', userRouter);
