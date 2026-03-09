@@ -3,7 +3,6 @@ const express = require("express"); //? Express framework for handling HTTP requ
 const User = require("../models/UserModel"); //? User model to interact with users collection
 const userRouter = express.Router(); //? Creating a router instance
 const jwt = require("jsonwebtoken"); //? Library used for generating authentication tokens (JWT)
-const { isValidElement } = require("react");
 
 
 //* ============================================

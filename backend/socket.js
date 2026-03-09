@@ -2,11 +2,11 @@
 //* ============================================
 //* SOCKET.IO INITIALIZATION FUNCTION
 //* ============================================
-//! This function will be responsible for configuring
+//! This function is responsible for configuring
 //! and handling all Socket.IO real-time logic
-//? It can receive the server instance as a parameter later
-//? Example: const socketIo = (server) => { ... }
-const socketIo = () => {
+//? It receives the already created `io` instance from server.js
+//? This keeps socket logic modular and separated from HTTP setup
+const socketIo = (io) => {
 
     //* Socket logic (connection, events, broadcasting)
     //* will be written inside this function
@@ -14,12 +14,11 @@ const socketIo = () => {
 };
 
 
-
 //* ============================================
 //* EXPORTING FUNCTION
 //* ============================================
-//? Exporting so it can be imported and used in server.js
-//? Example usage:
+//? Exporting so it can be used inside server.js
+//? Example in server.js:
 //? const socketIo = require("./socket");
-//? socketIo(server);
+//? socketIo(io);
 module.exports = socketIo;
