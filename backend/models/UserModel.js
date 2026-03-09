@@ -54,8 +54,6 @@ userSchema.pre('save', async function (next) {
     //* Hash the password using bcrypt
     //? 10 = salt rounds (higher = more secure but slower)
     this.password = await bcrypt.hash(this.password, 10);
-
-    next(); //? Continue saving the document
 });
 
 
