@@ -10,6 +10,7 @@ const cors = require('cors'); //? Middleware to enable Cross-Origin Resource Sha
 dotenv.config(); //? Initialize environment variables
 
 const userRouter = require('./routes/userRoutes'); //? User authentication routes
+const groupRouter = require('./routes/groupRoutes'); //? Group management routes
 
 //* IMPORTING SOCKET MODULE
 const socketIo = require('./socket'); //? Custom socket configuration function
@@ -57,10 +58,11 @@ socketIo(io);
 
 
 //* ============================================
-//* API ROUTESS
+//* API ROUTES
 //* ============================================
-//? All user-related routes will start with /api/users
-app.use('/api/users', userRouter);
+app.use('/api/users', userRouter); //? All user-related routes will start with /api/users
+
+app.use('/api/groups', groupRouter); //? All group-related routes will start with /api/groups
 
 
 //* ============================================
