@@ -4,16 +4,19 @@ const Group = require("../models/GroupModel"); //? Group model used to interact 
 
 const groupRouter = express.Router(); //? Creating a router instance for group-related routes
 
+const protect = require("../middlewares/authMiddleware"); //? Authentication middleware to protect routes
+
 
 //* ============================================
 //* CREATE NEW GROUP ROUTE
 //* ============================================
 //! Handles POST request to create a new group
-groupRouter.post("/", async (req, res) => {
+//? Route is protected → user must send valid JWT token
+groupRouter.post("/", protect, async (req, res) => {
 
     try {
 
-        const { name, descrption } = req.body; //* Extract group data from request body
+        const { name, description } = req.body; //* Extract group data from request body
 
         //* Create new group document in database
         const group = await Group.create({
