@@ -51,4 +51,32 @@ const protect = async (req, res, next) => {
 };
 
 
-module.exports = protect; //? Allows other routes to use this middleware
+
+//* ============================================
+//* ADMIN AUTHORIZATION MIDDLEWARE
+//* ============================================
+//! Purpose: Restrict access to admin-only routes
+//? Must be used AFTER the protect middleware
+//? Example: router.delete("/users/:id", protect, isAdmin)
+
+const isAdmin = (req, res, next) => {
+
+  try {
+
+    //* Check if user exists and has admin privileges
+    if (req.user && req.user.isAdmin) {
+
+      next(); //! User is admin → allow access to route
+
+    } else {
+      res.status(403).json({ message: "Forbidden, admin access required" }); //! User exists but is not an admin
+    }
+
+  } catch (error) {
+    res.status(401).json({ message: "Not authorized, token failed" }); //! Handle unexpected errors during authorization
+  }
+
+};
+
+
+module.exports = { protect, isAdmin }; //? Allows other routes to use this middlewares
