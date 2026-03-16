@@ -22,8 +22,8 @@ groupRouter.post("/", protect, async (req, res) => {
         const group = await Group.create({
             name,
             description,
-            // admin: req.user._id, //! Future: set logged-in user as group admin
-            // members: [req.user.id], //! Future: automatically add creator as first member
+            admin: req.user._id,  //! Logged-in user becomes the group admin
+            members: [req.user.id], //! Add creator as the first member of the group
         });
 
         //* Fetch the created group and populate referenced fields
