@@ -4,15 +4,21 @@ const Group = require("../models/GroupModel"); //? Group model used to interact 
 
 const groupRouter = express.Router(); //? Creating a router instance for group-related routes
 
-const protect = require("../middlewares/authMiddleware"); //? Authentication middleware to protect routes
+//* Import authentication middlewares
+//? protect → verifies JWT and attaches logged-in user to req.user
+//? isAdmin → ensures the logged-in user has admin privileges
+const { protect, isAdmin } = require("../middlewares/authMiddleware"); 
 
 
 //* ============================================
 //* CREATE NEW GROUP ROUTE
 //* ============================================
-//! Handles POST request to create a new group
-//? Route is protected → user must send valid JWT token
-groupRouter.post("/", protect, async (req, res) => {
+//! POST /api/groups
+//? Creates a new group in the system
+//? Route security:
+//? 1. protect → user must be authenticated (valid JWT token)
+//? 2. isAdmin → only admin users can create groups
+groupRouter.post("/", protect, isAdmin, async (req, res) => {
 
     try {
 
