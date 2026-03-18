@@ -46,4 +46,29 @@ groupRouter.post("/", protect, isAdmin, async (req, res) => {
 
 
 
+//* ============================================
+//* GET ALL GROUPS ROUTE
+//* ============================================
+//! GET /api/groups
+//? Returns all groups in the system
+//? Route is protected → only authenticated users can access
+groupRouter.get("/", protect, async (req, res) => {
+
+    try {
+
+        //* Fetch all groups from database
+        //? populate() replaces ObjectIds with actual user data
+        const groups = await Group.find()
+            .populate("admin", "username email")   //? Include admin details
+            .populate("members", "username email"); //? Include members details
+
+        //* Send list of groups as response
+        res.json(groups);
+
+    } catch (error) {
+        res.status(400).json({ message: error.message }); //! Handle errors during fetching groups
+    }
+});
+
+
 module.exports = groupRouter; //* Exporting the groupRouter
