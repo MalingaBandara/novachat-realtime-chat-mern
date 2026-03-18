@@ -107,4 +107,43 @@ groupRouter.post("/:groupId/join", protect, async (req, res) => {
 
 
 
+//* ============================================
+//* LEAVE GROUP ROUTE
+//* ============================================
+//! POST /api/groups/:groupId/leave
+//? Allows an authenticated user to leave a specific group
+//? Route is protected → user must be logged in (valid JWT)
+groupRouter.post("/:groupId/leave", protect, async (req, res) => {
+
+  try {
+
+    const group = await Group.findById(req.params.groupId); //* Find group by ID from request parameters
+
+    //* If group does not exist, return 404 error
+    if (!group) {
+      return res.status(404).json({ message: "Group not found" });
+    }
+
+    //* Check if user is NOT a member of the group
+    if (!group.members.includes(req.user._id)) {
+      return res.status(400).json({ message: "Not a member of this group" });
+    }
+
+    //* Remove current user from members array
+    //? filter() creates a new array excluding the current user's ID
+    //? Convert ObjectId to string for accurate comparison
+    group.members = group.members.filter((memberId) => {
+      return memberId.toString() !== req.user._id.toString();
+    });
+
+    await group.save(); //* Save updated group document to database
+
+    res.json({ message: "Successfully left the group" });//* Send success response
+
+  } catch (error) {
+    res.status(400).json({ message: error.message }); //! Handle errors during leave operation
+  }
+});
+
+
 module.exports = groupRouter; //* Exporting the groupRouter
