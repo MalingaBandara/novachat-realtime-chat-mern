@@ -71,4 +71,40 @@ groupRouter.get("/", protect, async (req, res) => {
 });
 
 
+
+//* ============================================
+//* JOIN GROUP ROUTE
+//* ============================================
+//! POST /api/groups/:groupId/join
+//? Allows an authenticated user to join a specific group
+//? Route is protected → user must be logged in (valid JWT)
+groupRouter.post("/:groupId/join", protect, async (req, res) => {
+
+    try {
+
+        const group = await Group.findById(req.params.groupId); //* Find group by ID from request parameters
+
+        //* If group does not exist, return 404 error
+        if (!group) {
+            return res.status(404).json({ message: "Group not found" });
+        }
+
+        //* Check if user is already a member of the group
+        //? includes() checks if req.user._id exists in members array
+        if (group.members.includes(req.user._id)) {
+            return res.status(400).json({ message: "Already a member of the group" });
+        }
+
+        group.members.push(req.user._id); //* Add current user to group's members list
+        await group.save(); //* Save updated group document to database
+
+        res.status(200).json({ message: "Joined the group successfully" }); //* Send success response
+
+    } catch (error) {
+        res.status(400).json({ message: error.message }); //! Handle errors during join operation
+    }
+});
+
+
+
 module.exports = groupRouter; //* Exporting the groupRouter
