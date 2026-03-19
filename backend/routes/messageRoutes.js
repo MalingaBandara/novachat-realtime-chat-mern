@@ -37,4 +37,28 @@ messageRouter.post("/", protect, async (req, res) => {
 });
 
 
+
+//* ============================================
+//* GET GROUP MESSAGES ROUTE
+//* ============================================
+//! GET /api/messages/:groupId
+//? Retrieves all messages for a specific group
+//? Route is protected → only authenticated users can access
+messageRouter.get("/:groupId", protect, async (req, res) => {
+
+    try {
+
+        //* Fetch messages that belong to the given groupId
+        const messages = await Message.find({ group: req.params.groupId })
+                .populate("sender", "username email") //? Replace sender ObjectId with full user details (username & email) using populate
+                .sort({ createdAt: 1 }); //? Sort messages by createdAt ascending (1) to return oldest messages first in chat order
+
+        res.status(200).json(messages); //* Send messages array as JSON response
+
+    } catch (error) {
+        res.status(500).json({ error: error.message }); //! Handle server/database errors
+    }
+});
+
+
 module.exports = messageRouter; //* Exporting the messageRouter
