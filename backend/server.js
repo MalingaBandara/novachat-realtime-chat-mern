@@ -11,6 +11,7 @@ dotenv.config(); //? Initialize environment variables
 
 const userRouter = require('./routes/userRoutes'); //? User authentication routes
 const groupRouter = require('./routes/groupRoutes'); //? Group management routes
+const messageRouter = require('./routes/messageRoutes'); //? Message handling routes
 
 //* IMPORTING SOCKET MODULE
 const socketIo = require('./socket'); //? Custom socket configuration function
@@ -63,6 +64,8 @@ socketIo(io);
 app.use('/api/users', userRouter); //? All user-related routes will start with /api/users
 
 app.use('/api/groups', groupRouter); //? All group-related routes will start with /api/groups
+
+app.use('/api/messages', messageRouter); //? All message-related routes will start with /api/messages
 
 
 //* ============================================
