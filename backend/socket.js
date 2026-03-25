@@ -67,7 +67,7 @@ const socketIo = (io) => {
                 //* Notify other users in the room that this user has left
                 socket.to(groupId).emit("user left", user?._id); //? socket.to() → sends event to everyone EXCEPT the current socket
             }
-            
+
         });
         //! END: LEAVE ROOM HANDLER
         
@@ -75,9 +75,22 @@ const socketIo = (io) => {
         //! ============================================
         //! NEW MESSAGE HANDLER
         //! ============================================
-        //? Implement logic to broadcast new messages to the room
+        //? Triggered when a user sends a new message to a group
+        //? Responsible for broadcasting the message to other users in the same room
+        socket.on('new message', (message) => {
+
+            //* message object typically contains:
+            //? message.content  → text of the message
+            //? message.groupId → target group/room ID
+            //? message.sender  → sender details (optional, based on frontend)
+
+            //* Send the message to all other users in the same room
+            socket.to(message.groupId).emit("message received", message); //? socket.to() → emits to everyone EXCEPT the sender
+
+        });
         //! END: NEW MESSAGE HANDLER
         
+
         //! ============================================
         //! DISCONNECT HANDLER
         //! ============================================
