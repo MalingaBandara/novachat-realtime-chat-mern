@@ -46,17 +46,50 @@ const socketIo = (io) => {
         });
         //! END: JOIN ROOM HANDLER
 
-        //! START: Leave room Handler
-        //! END: Leave room Handler
         
-        //! START: New Message Handler
-        //! END: New Message Handler
+        //! ============================================
+        //! LEAVE ROOM HANDLER
+        //! ============================================
+        //? Triggered when a user wants to leave a specific room (group chat)
+        socket.on('leave room', (groupId) => {
+
+            console.log(`${user?.username} leaving Group: `, groupId); //* Log user leaving action (for debugging/monitoring)
+
+            //* Remove socket from the specified room
+            socket.leave(groupId); //? After this, the socket will no longer receive events from this room
+
+            //* Check if this socket exists in our connectedUsers map
+            if (connectedUsers.has(socket.id)) {
+
+                //* Remove user from connected users tracking
+                connectedUsers.delete(socket.id); //? Ensures user is no longer counted in room presence
+
+                //* Notify other users in the room that this user has left
+                socket.to(groupId).emit("user left", user?._id); //? socket.to() → sends event to everyone EXCEPT the current socket
+            }
+            
+        });
+        //! END: LEAVE ROOM HANDLER
         
-        //! START: Disconnect Handler
-        //! END: Disconnect Handler
+
+        //! ============================================
+        //! NEW MESSAGE HANDLER
+        //! ============================================
+        //? Implement logic to broadcast new messages to the room
+        //! END: NEW MESSAGE HANDLER
         
-        //! START: Typing Indicator
-        //! END: Typing Indicator
+        //! ============================================
+        //! DISCONNECT HANDLER
+        //! ============================================
+        //? Handle cleanup when a user disconnects (remove from connectedUsers, notify others)
+        //! END: DISCONNECT HANDLER
+        
+        //! ============================================
+        //! TYPING INDICATOR
+        //! ============================================
+        //? Optionally implement typing indicators for real-time UX
+        //! END: TYPING INDICATOR
+
 
     } );
 };
