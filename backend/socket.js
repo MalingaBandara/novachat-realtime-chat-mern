@@ -120,7 +120,24 @@ const socketIo = (io) => {
         //! ============================================
         //! TYPING INDICATOR
         //! ============================================
-        //? Optionally implement typing indicators for real-time UX
+        //? Provides real-time feedback when a user is typing in a group chat
+
+        //* Triggered when a user starts typing
+        socket.on('typing', ({ groupId, username }) => {
+
+            //* Notify all other users in the room that this user is typing
+            socket.to(groupId).emit("user typing", { username }); //? socket.to() → sends to everyone EXCEPT the current user
+
+        });
+
+
+        //* Triggered when a user stops typing
+        socket.on('stop typing', ({ groupId }) => {
+
+            //* Notify all other users in the room to remove typing indicator
+            socket.to(groupId).emit("user stop typing", { username: user?.username }); //? Uses server-side user info for consistency
+
+        });
         //! END: TYPING INDICATOR
 
 
