@@ -51,7 +51,7 @@ const socketIo = (io) => {
         //! LEAVE ROOM HANDLER
         //! ============================================
         //? Triggered when a user wants to leave a specific room (group chat)
-        socket.on('leave room', (groupId) => {
+        socket.on( 'leave room', (groupId) => {
 
             console.log(`${user?.username} leaving Group: `, groupId); //* Log user leaving action (for debugging/monitoring)
 
@@ -77,7 +77,7 @@ const socketIo = (io) => {
         //! ============================================
         //? Triggered when a user sends a new message to a group
         //? Responsible for broadcasting the message to other users in the same room
-        socket.on('new message', (message) => {
+        socket.on( 'new message', (message) => {
 
             //* message object typically contains:
             //? message.content  → text of the message
@@ -94,8 +94,28 @@ const socketIo = (io) => {
         //! ============================================
         //! DISCONNECT HANDLER
         //! ============================================
-        //? Handle cleanup when a user disconnects (remove from connectedUsers, notify others)
+        //? Triggered automatically when a user disconnects (closes tab, loses connection, etc.)
+        //? Responsible for cleaning up user data and notifying others in the room
+        socket.on('disconnect', () => {
+
+            console.log(`${user?.username} disconnected`); //* Log disconnection event
+
+            //* Check if this socket exists in connectedUsers map
+            if (connectedUsers.has(socket.id)) {
+
+                const userData = connectedUsers.get(socket.id); //* Retrieve stored user data (user info + room)
+
+                //* Notify other users in the same room that this user has left
+                socket.to(userData.room).emit("user left", user?._id); //? socket.to() → emits to everyone except the disconnected socket
+
+                //* Remove user from connectedUsers map
+                connectedUsers.delete(socket.id); //? Prevents memory leaks and keeps room state accurate
+
+            }
+
+        });
         //! END: DISCONNECT HANDLER
+
         
         //! ============================================
         //! TYPING INDICATOR
