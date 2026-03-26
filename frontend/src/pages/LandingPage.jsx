@@ -6,42 +6,51 @@ import {
   Text,
   Stack,
   Icon,
-  useColorModeValue,
   SimpleGrid,
   Flex,
   VStack,
   HStack,
   Badge,
-  Input,
 } from "@chakra-ui/react";
 import { Link as RouterLink } from "react-router-dom";
+import { motion } from "framer-motion";
 import {
   FiMessageSquare,
   FiUsers,
   FiLock,
   FiLogIn,
-  FiLogOut,
   FiUserPlus,
   FiGlobe,
   FiActivity,
-  FiCheckCircle,
   FiUserCheck,
 } from "react-icons/fi";
 
-const Feature = ({ title, text, icon, badges = [] }) => {
+const MotionBox = motion(Box);
+const MotionFlex = motion(Flex);
+const MotionStack = motion(Stack);
+
+const Feature = ({ title, text, icon, badges = [], delay = 0 }) => {
   return (
-    <Stack
-      bg={useColorModeValue("white", "gray.800")}
-      rounded="xl"
-      p={6}
+    <MotionStack
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{ duration: 0.5, delay }}
+      bg="rgba(255, 255, 255, 0.03)"
+      backdropFilter="blur(10px)"
+      rounded="2xl"
+      p={8}
       spacing={4}
       border="1px solid"
-      borderColor={useColorModeValue("gray.100", "gray.700")}
+      borderColor="whiteAlpha.100"
       _hover={{
         transform: "translateY(-5px)",
-        boxShadow: "xl",
+        boxShadow: "0 10px 30px -10px rgba(139, 92, 246, 0.3)",
+        borderColor: "whiteAlpha.300",
+        bg: "rgba(255, 255, 255, 0.05)",
       }}
-      transition="all 0.3s ease"
+      transitionProperty="all"
+      transitionDuration="0.3s"
     >
       <Flex
         w={16}
@@ -49,14 +58,15 @@ const Feature = ({ title, text, icon, badges = [] }) => {
         align="center"
         justify="center"
         color="white"
-        rounded="full"
-        bg={useColorModeValue("blue.500", "blue.400")}
+        rounded="2xl"
+        bgGradient="linear(to-br, purple.500, blue.500)"
+        boxShadow="0 4px 14px 0 rgba(139, 92, 246, 0.39)"
       >
         {icon}
       </Flex>
-      <Box>
-        <HStack spacing={2} mb={2}>
-          <Text fontWeight={600} fontSize="lg">
+      <Box mt={2}>
+        <HStack spacing={2} mb={3}>
+          <Text fontWeight="bold" fontSize="xl" color="white">
             {title}
           </Text>
           {badges.map((badge, index) => (
@@ -66,14 +76,16 @@ const Feature = ({ title, text, icon, badges = [] }) => {
               variant="subtle"
               rounded="full"
               px={2}
+              bg={`${badge.color}.900`}
+              color={`${badge.color}.200`}
             >
               {badge.text}
             </Badge>
           ))}
         </HStack>
-        <Text color={useColorModeValue("gray.500", "gray.200")}>{text}</Text>
+        <Text color="gray.400">{text}</Text>
       </Box>
-    </Stack>
+    </MotionStack>
   );
 };
 
@@ -81,21 +93,29 @@ const ChatMessage = ({ message, sender, time, isUser }) => {
   return (
     <Flex justify={isUser ? "flex-end" : "flex-start"} w="100%">
       <Box
-        bg={isUser ? "blue.500" : "gray.100"}
-        color={isUser ? "white" : "gray.800"}
-        borderRadius="lg"
-        px={4}
-        py={2}
+        bg={isUser ? "linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)" : "rgba(255, 255, 255, 0.05)"}
+        color={isUser ? "white" : "gray.100"}
+        borderRadius="2xl"
+        borderBottomRightRadius={isUser ? "sm" : "2xl"}
+        borderBottomLeftRadius={isUser ? "2xl" : "sm"}
+        px={5}
+        py={3}
         maxW="80%"
+        border={isUser ? "none" : "1px solid"}
+        borderColor="whiteAlpha.100"
+        boxShadow={isUser ? "0 4px 14px 0 rgba(139, 92, 246, 0.39)" : "none"}
       >
-        <Text fontSize="sm" fontWeight="bold" mb={1}>
-          {sender}
-        </Text>
-        <Text>{message}</Text>
+        {!isUser && (
+          <Text fontSize="xs" fontWeight="bold" color="purple.300" mb={1}>
+            {sender}
+          </Text>
+        )}
+        <Text fontSize="sm">{message}</Text>
         <Text
           fontSize="xs"
           color={isUser ? "whiteAlpha.700" : "gray.500"}
           mt={1}
+          textAlign={isUser ? "right" : "left"}
         >
           {time}
         </Text>
@@ -106,47 +126,84 @@ const ChatMessage = ({ message, sender, time, isUser }) => {
 
 export default function LandingPage() {
   return (
-    <Box bg={useColorModeValue("gray.50", "gray.900")} minH="100vh">
-      {/* Hero Section */}
-      <Container maxW="7xl" pt={10}>
+    <Box 
+      bg="#050505" 
+      minH="100vh" 
+      position="relative" 
+      overflow="hidden"
+      fontFamily="'Inter', sans-serif"
+    >
+      {/* Background glowing orbs */}
+      <Box
+        position="absolute"
+        top="-10%"
+        left="-10%"
+        w="40%"
+        h="40%"
+        bgGradient="radial(circle, rgba(139, 92, 246, 0.15) 0%, rgba(0,0,0,0) 70%)"
+        filter="blur(60px)"
+        zIndex={0}
+      />
+      <Box
+        position="absolute"
+        bottom="-10%"
+        right="-10%"
+        w="40%"
+        h="40%"
+        bgGradient="radial(circle, rgba(59, 130, 246, 0.15) 0%, rgba(0,0,0,0) 70%)"
+        filter="blur(60px)"
+        zIndex={0}
+      />
+
+      <Container maxW="7xl" pt={6} position="relative" zIndex={1}>
+        {/* Navigation / Header */}
+        <Flex justify="space-between" align="center" py={4} mb={8}>
+          <HStack spacing={2}>
+            <Box w={8} h={8} borderRadius="lg" bgGradient="linear(to-br, purple.500, blue.500)" display="flex" alignItems="center" justifyContent="center" boxShadow="0 0 20px rgba(139, 92, 246, 0.5)">
+               <Icon as={FiMessageSquare} color="white" />
+            </Box>
+            <Text fontSize="2xl" fontWeight="900" color="white" letterSpacing="tight">
+              Nova<Text as="span" color="purple.400">Chat</Text>
+            </Text>
+          </HStack>
+          <HStack spacing={4}>
+            <Button as={RouterLink} to="/login" variant="ghost" color="white" _hover={{ bg: "whiteAlpha.100" }}>
+              Sign In
+            </Button>
+            <Button as={RouterLink} to="/register" colorScheme="purple" bgGradient="linear(to-r, purple.500, blue.500)" _hover={{ bgGradient: "linear(to-r, purple.600, blue.600)" }} border="none" rounded="full" px={6}>
+              Get Started
+            </Button>
+          </HStack>
+        </Flex>
+
+        {/* Hero Section */}
         <Stack
           align="center"
           spacing={{ base: 8, md: 10 }}
-          py={{ base: 20, md: 28 }}
-          direction={{ base: "column", md: "row" }}
+          py={{ base: 10, md: 20 }}
+          direction={{ base: "column", lg: "row" }}
         >
-          <Stack flex={1} spacing={{ base: 5, md: 10 }}>
+          <MotionStack
+            initial={{ opacity: 0, x: -50 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.8 }}
+            flex={1}
+            spacing={{ base: 6, md: 8 }}
+          >
+            <Badge colorScheme="purple" alignSelf="flex-start" px={3} py={1} rounded="full" bg="purple.900" color="purple.200" border="1px solid" borderColor="purple.700">
+              v2.0 is now live 🚀
+            </Badge>
             <Heading
               lineHeight={1.1}
-              fontWeight={600}
-              fontSize={{ base: "3xl", sm: "4xl", lg: "6xl" }}
+              fontWeight={800}
+              fontSize={{ base: "4xl", sm: "5xl", lg: "7xl" }}
+              color="white"
+              letterSpacing="tight"
             >
-              <Text
-                as="span"
-                position="relative"
-                _after={{
-                  content: "''",
-                  width: "full",
-                  height: "30%",
-                  position: "absolute",
-                  bottom: 1,
-                  left: 0,
-                  bg: "blue.400",
-                  zIndex: -1,
-                }}
-              >
-                BitLord
-              </Text>
-              <br />
-              <Text as="span" color="blue.400">
-                Chat App
-              </Text>
+              Connect with your team in <Text as="span" bgClip="text" bgGradient="linear(to-r, purple.400, blue.400)">real-time.</Text>
             </Heading>
-            <Text color="gray.500" fontSize="xl">
-              Experience seamless group communication with our modern chat
-              platform. Connect with teams, friends, and communities in
-              real-time with advanced features like typing indicators and online
-              status.
+            <Text color="gray.400" fontSize="xl" maxW="lg" lineHeight="tall">
+              Experience seamless group communication with Nova Chat. Designed by BitLord for ultimate performance and stunning esthetics. Connect, collaborate, and conquer.
             </Text>
             <Stack
               spacing={{ base: 4, sm: 6 }}
@@ -157,33 +214,45 @@ export default function LandingPage() {
                 to="/register"
                 rounded="full"
                 size="lg"
-                fontWeight="normal"
                 px={8}
-                colorScheme="blue"
-                bg="blue.400"
-                _hover={{ bg: "blue.500" }}
+                height="56px"
+                fontSize="md"
+                color="white"
+                bgGradient="linear(to-r, purple.500, blue.500)"
+                _hover={{
+                  bgGradient: "linear(to-r, purple.600, blue.600)",
+                  transform: "translateY(-2px)",
+                  boxShadow: "0 10px 20px -10px rgba(139, 92, 246, 0.5)"
+                }}
                 leftIcon={<FiUserPlus />}
+                transition="all 0.3s"
               >
-                Get Started
+                Start Chatting Free
               </Button>
               <Button
                 as={RouterLink}
                 to="/login"
                 rounded="full"
                 size="lg"
-                fontWeight="normal"
                 px={8}
+                height="56px"
+                fontSize="md"
                 variant="outline"
-                colorScheme="blue"
+                color="white"
+                borderColor="whiteAlpha.300"
+                _hover={{ bg: "whiteAlpha.100", borderColor: "whiteAlpha.400" }}
                 leftIcon={<FiLogIn />}
               >
-                Sign In
+                Login to Account
               </Button>
             </Stack>
-          </Stack>
+          </MotionStack>
 
           {/* Chat Preview */}
-          <Flex
+          <MotionFlex
+            initial={{ opacity: 0, x: 50 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.8, delay: 0.2 }}
             flex={1}
             justify="center"
             align="center"
@@ -191,159 +260,212 @@ export default function LandingPage() {
             w="full"
           >
             <Box
+              position="absolute"
+              w="140%"
+              h="140%"
+              bg="radial-gradient(circle, rgba(139,92,246,0.1) 0%, rgba(0,0,0,0) 70%)"
+              zIndex={-1}
+            />
+            <Box
               position="relative"
-              height="500px"
-              rounded="2xl"
-              boxShadow="2xl"
+              height="550px"
+              rounded="3xl"
+              boxShadow="0 25px 50px -12px rgba(0, 0, 0, 0.5)"
               width="full"
+              maxW="500px"
               overflow="hidden"
-              bg="white"
-              border="1px"
-              borderColor="gray.200"
+              bg="rgba(15, 23, 42, 0.6)"
+              backdropFilter="blur(20px)"
+              border="1px solid"
+              borderColor="whiteAlpha.200"
+              sx={{
+                "&::before": {
+                  content: '""',
+                  position: "absolute",
+                  top: 0,
+                  left: "-100%",
+                  width: "100%",
+                  height: "100%",
+                  background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent)",
+                  animation: "shimmer 3s infinite",
+                }
+              }}
             >
               {/* Chat Header */}
-              <Box
-                position="absolute"
-                top={0}
-                left={0}
-                right={0}
-                bg="blue.500"
-                p={4}
-                color="white"
-                borderBottom="1px"
-                borderColor="blue.600"
-              >
+              <Box p={5} borderBottom="1px solid" borderColor="whiteAlpha.100" bg="rgba(0,0,0,0.2)">
                 <HStack justify="space-between">
-                  <HStack>
-                    <Icon as={FiUsers} />
-                    <Text fontWeight="bold">Development Team</Text>
+                  <HStack spacing={3}>
+                    <Box p={2} bg="purple.500" rounded="xl" boxShadow="0 0 15px rgba(139,92,246,0.4)">
+                      <Icon as={FiUsers} color="white" />
+                    </Box>
+                    <Box>
+                      <Text fontWeight="bold" color="white" fontSize="md">Nova Engine Team</Text>
+                      <Text color="green.400" fontSize="xs">3 online</Text>
+                    </Box>
                   </HStack>
-                  <HStack spacing={4}>
-                    <Badge colorScheme="green" variant="solid">
-                      3 online
-                    </Badge>
-                    <Icon as={FiGlobe} />
-                  </HStack>
+                  <Icon as={FiGlobe} color="gray.400" />
                 </HStack>
               </Box>
 
               {/* Chat Messages */}
-              <VStack
-                spacing={4}
-                p={4}
-                pt="60px"
-                h="calc(100% - 120px)"
-                overflowY="auto"
-              >
+              <VStack spacing={5} p={6} pt="20px" h="calc(100% - 85px)" overflowY="auto">
                 <ChatMessage
                   sender="Sarah Chen"
-                  message="Hey team! Just pushed the new updates to staging."
+                  message="Hey team! Just pushed the new stellar UI updates to staging."
                   time="10:30 AM"
                   isUser={false}
                 />
                 <ChatMessage
                   sender="Alex Thompson"
-                  message="Great work! The new features look amazing 🚀"
+                  message="Looks absolutely gorgeous! The glassmorphism is spot on 🚀"
                   time="10:31 AM"
                   isUser={false}
                 />
                 <ChatMessage
                   sender="You"
-                  message="Thanks! Let's review it in our next standup."
+                  message="Thanks! I've also refined the dark mode aesthetics. Let's deploy to prod!"
                   time="10:32 AM"
                   isUser={true}
                 />
-                <Box w="100%" textAlign="center">
-                  <Badge colorScheme="gray" fontSize="xs">
-                    Sarah is typing...
-                  </Badge>
+                <Box w="100%" display="flex" justifyContent="flex-start" mt={2}>
+                  <Box bg="rgba(255,255,255,0.05)" px={4} py={2} rounded="full" border="1px solid" borderColor="whiteAlpha.100">
+                    <HStack spacing={1}>
+                      <Box w={1.5} h={1.5} bg="purple.400" rounded="full" css={{ animation: "pulse 1.5s infinite" }} />
+                      <Box w={1.5} h={1.5} bg="purple.400" rounded="full" css={{ animation: "pulse 1.5s infinite 0.2s" }} />
+                      <Box w={1.5} h={1.5} bg="purple.400" rounded="full" css={{ animation: "pulse 1.5s infinite 0.4s" }} />
+                    </HStack>
+                  </Box>
                 </Box>
               </VStack>
             </Box>
-          </Flex>
+          </MotionFlex>
         </Stack>
 
         {/* Features Grid */}
-        <Box py={20}>
-          <VStack spacing={2} textAlign="center" mb={12}>
-            <Heading fontSize="4xl">Powerful Features</Heading>
-            <Text fontSize="lg" color="gray.500">
-              Everything you need for seamless team collaboration
+        <Box py={24}>
+          <VStack spacing={4} textAlign="center" mb={16}>
+            <Text color="purple.400" fontWeight="bold" letterSpacing="widest" textTransform="uppercase" fontSize="sm">
+              Next-Gen Features
+            </Text>
+            <Heading fontSize={{ base: "3xl", md: "5xl" }} color="white" fontWeight="800">
+              Built for speed. Designed to inspire.
+            </Heading>
+            <Text fontSize="lg" color="gray.400" maxW="2xl">
+              Everything you need for seamless team collaboration without compromising on visual excellence.
             </Text>
           </VStack>
-          <SimpleGrid
-            columns={{ base: 1, md: 2, lg: 3 }}
-            spacing={10}
-            px={{ base: 4, md: 8 }}
-          >
+          <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={8} px={{ base: 4, md: 0 }}>
             <Feature
-              icon={<Icon as={FiLock} w={10} h={10} />}
+              delay={0.1}
+              icon={<Icon as={FiLock} w={8} h={8} />}
               title="Secure Authentication"
-              badges={[{ text: "Secure", color: "green" }]}
-              text="Register and login securely with email verification and encrypted passwords."
+              badges={[{ text: "Encrypted", color: "green" }]}
+              text="Register and login securely. Your credentials are encrypted and safe within the BitLord ecosystem."
             />
             <Feature
-              icon={<Icon as={FiUsers} w={10} h={10} />}
-              title="Group Management"
+              delay={0.2}
+              icon={<Icon as={FiUsers} w={8} h={8} />}
+              title="Dynamic Groups"
               badges={[{ text: "Real-time", color: "blue" }]}
-              text="Create, join, or leave groups easily. Manage multiple conversations in one place."
+              text="Create, join, or leave groups instantaneously. Manage multiple conversations in beautifully isolated channels."
             />
             <Feature
-              icon={<Icon as={FiUserCheck} w={10} h={10} />}
-              title="Online Presence"
-              badges={[{ text: "Live", color: "green" }]}
-              text="See who's currently online and active in your groups in real-time."
+              delay={0.3}
+              icon={<Icon as={FiUserCheck} w={8} h={8} />}
+              title="Live Presence"
+              badges={[{ text: "Instant", color: "green" }]}
+              text="See who's currently online and active with seamless socket connections that update in real-time."
             />
             <Feature
-              icon={<Icon as={FiActivity} w={10} h={10} />}
+              delay={0.4}
+              icon={<Icon as={FiActivity} w={8} h={8} />}
               title="Typing Indicators"
               badges={[{ text: "Interactive", color: "purple" }]}
-              text="Know when others are typing with real-time typing indicators."
+              text="Know exactly when colleagues are responding with responsive typing indicators right in the interface."
             />
             <Feature
-              icon={<Icon as={FiMessageSquare} w={10} h={10} />}
-              title="Instant Messaging"
-              badges={[{ text: "Fast", color: "orange" }]}
-              text="Send and receive messages instantly with real-time delivery and notifications."
+              delay={0.5}
+              icon={<Icon as={FiMessageSquare} w={8} h={8} />}
+              title="Lightning Fast"
+              badges={[{ text: "Socket.IO", color: "orange" }]}
+              text="Send and receive messages with practically zero latency. Perfect for continuous workflows."
             />
             <Feature
-              icon={<Icon as={FiGlobe} w={10} h={10} />}
-              title="Global Access"
+              delay={0.6}
+              icon={<Icon as={FiGlobe} w={8} h={8} />}
+              title="Global Scale"
               badges={[{ text: "24/7", color: "blue" }]}
-              text="Access your chats from anywhere, anytime with persistent connections."
+              text="Access your chats globally from any device. The persistent connection works beautifully anywhere."
             />
           </SimpleGrid>
         </Box>
 
-        {/* Call to Action */}
-        <Box py={20}>
+        {/* CTA Section */}
+        <MotionBox
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+          py={20}
+        >
           <Stack
-            direction={{ base: "column", md: "row" }}
+            direction={{ base: "column", lg: "row" }}
             spacing={10}
             align="center"
-            justify="center"
-            bg={useColorModeValue("blue.50", "blue.900")}
-            p={10}
-            rounded="xl"
+            justify="space-between"
+            bg="rgba(139, 92, 246, 0.05)"
+            p={12}
+            rounded="3xl"
+            border="1px solid"
+            borderColor="purple.900"
+            position="relative"
+            overflow="hidden"
           >
-            <VStack align="flex-start" spacing={4}>
-              <Heading size="lg">Ready to get started?</Heading>
-              <Text color="gray.600" fontSize="lg">
-                Join thousands of users already using our platform
+            <Box position="absolute" right="-10%" top="-50%" w="50%" h="200%" bgGradient="radial(circle, rgba(139,92,246,0.2) 0%, transparent 70%)" />
+            
+            <VStack align="flex-start" spacing={4} zIndex={1}>
+              <Heading size="2xl" color="white" fontWeight="800">
+                Ready to elevate your chat?
+              </Heading>
+              <Text color="gray.400" fontSize="xl">
+                Join the Nova Chat platform and experience communication like never before.
               </Text>
             </VStack>
             <Button
               as={RouterLink}
               to="/register"
-              size="lg"
-              colorScheme="blue"
+              size="xl"
+              height="60px"
+              px={10}
+              fontSize="lg"
+              color="white"
+              bgGradient="linear(to-r, purple.500, blue.500)"
+              _hover={{ bgGradient: "linear(to-r, purple.600, blue.600)", transform: "scale(1.02)" }}
               rightIcon={<FiUserPlus />}
+              rounded="full"
+              zIndex={1}
             >
               Create Free Account
             </Button>
           </Stack>
-        </Box>
+        </MotionBox>
+        
+        {/* Footer */}
+        <Flex justify="center" align="center" py={8} borderTop="1px solid" borderColor="whiteAlpha.100" mt={10}>
+          <Text color="gray.500" fontSize="sm">
+            © {new Date().getFullYear()} Nova Chat by BitLord. All rights reserved.
+          </Text>
+        </Flex>
       </Container>
+      <style>{`
+        @keyframes shimmer {
+          100% { left: 100%; }
+        }
+        @keyframes pulse {
+          0%, 100% { transform: scale(0.8); opacity: 0.5; }
+          50% { transform: scale(1.2); opacity: 1; }
+        }
+      `}</style>
     </Box>
   );
 }

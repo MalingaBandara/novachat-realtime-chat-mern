@@ -10,32 +10,50 @@ import {
   Avatar,
   InputGroup,
   InputRightElement,
+  Tooltip,
 } from "@chakra-ui/react";
-import { FiSend, FiInfo, FiMessageCircle } from "react-icons/fi";
+import { FiSend, FiInfo, FiHash, FiMoreVertical } from "react-icons/fi";
 import UsersList from "./UsersList";
+import { motion } from "framer-motion";
+
+const MotionBox = motion(Box);
 
 const ChatArea = () => {
   // Sample data for demonstration
   const sampleMessages = [
     {
       id: 1,
-      content: "Hey team! Just pushed the new updates to staging.",
+      content: "Hey team! Just pushed the new stellar updates to staging.",
       sender: { username: "Sarah Chen" },
       createdAt: "10:30 AM",
       isCurrentUser: false,
     },
     {
       id: 2,
-      content: "Great work! The new features look amazing 🚀",
+      content: "Great work! The new glassmorphism features look amazing 🚀",
       sender: { username: "Alex Thompson" },
       createdAt: "10:31 AM",
       isCurrentUser: false,
     },
     {
       id: 3,
-      content: "Thanks! Let's review it in our next standup.",
+      content: "Thanks! I'll prep the deployment pipeline for tomorrow's release.",
       sender: { username: "You" },
       createdAt: "10:32 AM",
+      isCurrentUser: true,
+    },
+    {
+      id: 4,
+      content: "Awesome, I'll review the PR right after this standup.",
+      sender: { username: "Sarah Chen" },
+      createdAt: "10:35 AM",
+      isCurrentUser: false,
+    },
+    {
+      id: 5,
+      content: "Perfect. Everything is looking good on my end.",
+      sender: { username: "You" },
+      createdAt: "10:36 AM",
       isCurrentUser: true,
     },
   ];
@@ -44,145 +62,186 @@ const ChatArea = () => {
     { id: 1, username: "Sarah Chen", isOnline: true },
     { id: 2, username: "Alex Thompson", isOnline: true },
     { id: 3, username: "John Doe", isOnline: false },
+    { id: 4, username: "Emma Watson", isOnline: true },
+    { id: 5, username: "Mike Ross", isOnline: false },
   ];
 
   return (
-    <Flex h="100%" position="relative">
+    <Flex h="100%" position="relative" bg="transparent">
       <Box
         flex="1"
         display="flex"
         flexDirection="column"
-        bg="gray.50"
-        maxW={`calc(100% - 260px)`}
+        bg="transparent"
+        maxW={`calc(100% - 280px)`}
       >
         {/* Chat Header */}
         <Flex
           px={6}
-          py={4}
-          bg="white"
+          py={5}
+          bg="rgba(15, 23, 42, 0.4)"
           borderBottom="1px solid"
-          borderColor="gray.200"
+          borderColor="whiteAlpha.100"
           align="center"
-          boxShadow="sm"
+          backdropFilter="blur(16px)"
+          zIndex={2}
         >
-          <Icon as={FiMessageCircle} fontSize="24px" color="blue.500" mr={3} />
+          <Box p={2.5} bg="rgba(255,255,255,0.05)" rounded="xl" mr={4} border="1px solid" borderColor="whiteAlpha.100">
+             <Icon as={FiHash} fontSize="20px" color="purple.400" />
+          </Box>
           <Box flex="1">
-            <Text fontSize="lg" fontWeight="bold" color="gray.800">
-              Team Chat
+            <Text fontSize="lg" fontWeight="bold" color="white" letterSpacing="tight">
+              Development Team
             </Text>
-            <Text fontSize="sm" color="gray.500">
-              General Discussion
+            <Text fontSize="xs" color="gray.400" mt={0.5}>
+              Main development team channel for cosmic updates
             </Text>
           </Box>
-          <Icon
-            as={FiInfo}
-            fontSize="20px"
-            color="gray.400"
-            cursor="pointer"
-            _hover={{ color: "blue.500" }}
-          />
+          <HStack spacing={2}>
+            <Tooltip label="Channel Info" bg="purple.600" color="white" rounded="md">
+              <Box p={2} cursor="pointer" rounded="lg" _hover={{ bg: "rgba(255,255,255,0.05)" }} transition="all 0.2s">
+                <Icon as={FiInfo} fontSize="20px" color="gray.400" _hover={{ color: "purple.300" }} />
+              </Box>
+            </Tooltip>
+            <Tooltip label="Options" bg="purple.600" color="white" rounded="md">
+               <Box p={2} cursor="pointer" rounded="lg" _hover={{ bg: "rgba(255,255,255,0.05)" }} transition="all 0.2s">
+                 <Icon as={FiMoreVertical} fontSize="20px" color="gray.400" _hover={{ color: "purple.300" }} />
+               </Box>
+            </Tooltip>
+          </HStack>
         </Flex>
 
         {/* Messages Area */}
         <VStack
           flex="1"
           overflowY="auto"
-          spacing={4}
+          spacing={6}
           align="stretch"
-          px={6}
-          py={4}
+          px={8}
+          py={6}
           position="relative"
+          bg="rgba(0,0,0,0.2)"
           sx={{
             "&::-webkit-scrollbar": {
-              width: "8px",
+              width: "6px",
             },
             "&::-webkit-scrollbar-track": {
-              width: "10px",
+              background: "transparent",
             },
             "&::-webkit-scrollbar-thumb": {
-              background: "gray.200",
+              background: "rgba(255,255,255,0.1)",
               borderRadius: "24px",
+            },
+            "&::-webkit-scrollbar-thumb:hover": {
+              background: "rgba(255,255,255,0.2)",
             },
           }}
         >
-          {sampleMessages.map((message) => (
-            <Box
+          {sampleMessages.map((message, index) => (
+            <MotionBox
               key={message.id}
-              alignSelf={message.isCurrentUser ? "flex-start" : "flex-end"}
-              maxW="70%"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, delay: index * 0.1 }}
+              alignSelf={message.isCurrentUser ? "flex-end" : "flex-start"}
+              maxW="75%"
             >
-              <Flex direction="column" gap={1}>
+              <Flex direction="column" gap={1.5}>
                 <Flex
                   align="center"
                   mb={1}
                   justifyContent={
-                    message.isCurrentUser ? "flex-start" : "flex-end"
+                    message.isCurrentUser ? "flex-end" : "flex-start"
                   }
-                  gap={2}
+                  gap={3}
                 >
                   {message.isCurrentUser ? (
                     <>
-                      <Avatar size="xs" name={message.sender.username} />
-                      <Text fontSize="xs" color="gray.500">
-                        You • {message.createdAt}
+                      <Text fontSize="xs" color="gray.400" fontWeight="medium">
+                         {message.createdAt}
                       </Text>
                     </>
                   ) : (
                     <>
-                      <Text fontSize="xs" color="gray.500">
-                        {message.sender.username} • {message.createdAt}
+                      <Avatar size="sm" name={message.sender.username} bgGradient="linear(to-br, purple.400, blue.400)" border="2px solid" borderColor="rgba(255,255,255,0.1)" />
+                      <Text fontSize="sm" color="purple.300" fontWeight="bold">
+                        {message.sender.username}
                       </Text>
-                      <Avatar size="xs" name={message.sender.username} />
+                      <Text fontSize="xs" color="gray.500" fontWeight="medium">
+                        {message.createdAt}
+                      </Text>
                     </>
                   )}
                 </Flex>
 
                 <Box
-                  bg={message.isCurrentUser ? "blue.500" : "white"}
-                  color={message.isCurrentUser ? "white" : "gray.800"}
-                  p={3}
-                  borderRadius="lg"
-                  boxShadow="sm"
+                  bg={message.isCurrentUser ? "linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)" : "rgba(30, 41, 59, 0.7)"}
+                  color="white"
+                  p={4}
+                  borderRadius="2xl"
+                  borderBottomRightRadius={message.isCurrentUser ? "sm" : "2xl"}
+                  borderTopLeftRadius={message.isCurrentUser ? "2xl" : "sm"}
+                  boxShadow={message.isCurrentUser ? "0 10px 25px -5px rgba(139, 92, 246, 0.4)" : "0 4px 15px rgba(0,0,0,0.1)"}
+                  border={message.isCurrentUser ? "none" : "1px solid"}
+                  borderColor="whiteAlpha.100"
+                  backdropFilter="blur(10px)"
                 >
-                  <Text>{message.content}</Text>
+                  <Text fontSize="md" lineHeight="tall">{message.content}</Text>
                 </Box>
               </Flex>
-            </Box>
+            </MotionBox>
           ))}
         </VStack>
 
         {/* Message Input */}
         <Box
-          p={4}
-          bg="white"
+          p={6}
+          bg="rgba(15, 23, 42, 0.5)"
           borderTop="1px solid"
-          borderColor="gray.200"
+          borderColor="whiteAlpha.100"
+          backdropFilter="blur(16px)"
           position="relative"
           zIndex="1"
         >
-          <InputGroup size="lg">
+          <InputGroup size="lg" position="relative">
             <Input
-              placeholder="Type your message..."
+              placeholder="Message #Development Team..."
+              pl={6}
               pr="4.5rem"
-              bg="gray.50"
-              border="none"
-              _focus={{
-                boxShadow: "none",
-                bg: "gray.100",
+              bg="rgba(0,0,0,0.3)"
+              border="1px solid"
+              borderColor="whiteAlpha.200"
+              color="white"
+              height="60px"
+              rounded="2xl"
+              _hover={{
+                borderColor: "whiteAlpha.300",
+                bg: "rgba(0,0,0,0.4)"
               }}
+              _focus={{
+                boxShadow: "0 0 0 1px #8b5cf6",
+                borderColor: "purple.400",
+                bg: "rgba(0,0,0,0.5)",
+              }}
+              _placeholder={{ color: "gray.500", fontSize: "md" }}
+              transition="all 0.3s"
             />
-            <InputRightElement width="4.5rem">
+            <InputRightElement width="4.5rem" height="100%">
               <Button
-                h="1.75rem"
-                size="sm"
-                colorScheme="blue"
-                borderRadius="full"
+                h="40px"
+                w="40px"
+                size="md"
+                colorScheme="purple"
+                borderRadius="xl"
+                bgGradient="linear(to-br, purple.500, blue.500)"
                 _hover={{
-                  transform: "translateY(-1px)",
+                  transform: "translateY(-2px)",
+                  boxShadow: "0 5px 15px rgba(139, 92, 246, 0.4)"
                 }}
                 transition="all 0.2s"
+                p={0}
               >
-                <Icon as={FiSend} />
+                <Icon as={FiSend} fontSize="18px" />
               </Button>
             </InputRightElement>
           </InputGroup>
@@ -191,7 +250,7 @@ const ChatArea = () => {
 
       {/* UsersList with fixed width */}
       <Box
-        width="260px"
+        width="280px"
         position="sticky"
         right={0}
         top={0}

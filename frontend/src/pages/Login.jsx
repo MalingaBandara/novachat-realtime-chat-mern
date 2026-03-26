@@ -6,9 +6,14 @@ import {
   Input,
   VStack,
   Text,
+  HStack,
+  Icon,
 } from "@chakra-ui/react";
 import { Link } from "react-router-dom";
-import { FiLogIn } from "react-icons/fi";
+import { FiLogIn, FiMessageSquare } from "react-icons/fi";
+import { motion } from "framer-motion";
+
+const MotionBox = motion(Box);
 
 const Login = () => {
   return (
@@ -18,44 +23,93 @@ const Login = () => {
       display="flex"
       alignItems="center"
       justifyContent="center"
-      bgGradient="linear(to-r, blue.600, purple.600)"
+      bg="#050505"
+      position="relative"
+      overflow="hidden"
+      fontFamily="'Inter', sans-serif"
     >
+      {/* Background Orbs */}
       <Box
+        position="absolute"
+        top="-20%"
+        left="-10%"
+        w="50%"
+        h="50%"
+        bgGradient="radial(circle, rgba(139, 92, 246, 0.15) 0%, transparent 70%)"
+        filter="blur(80px)"
+        zIndex={0}
+      />
+      <Box
+        position="absolute"
+        bottom="-20%"
+        right="-10%"
+        w="50%"
+        h="50%"
+        bgGradient="radial(circle, rgba(59, 130, 246, 0.15) 0%, transparent 70%)"
+        filter="blur(80px)"
+        zIndex={0}
+      />
+
+      <MotionBox
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
         display="flex"
-        w={["95%", "90%", "80%", "75%"]}
-        maxW="1200px"
-        h={["auto", "auto", "600px"]}
-        borderRadius="2xl"
+        w={["90%", "85%", "75%", "65%"]}
+        maxW="1100px"
+        h={["auto", "auto", "650px"]}
+        borderRadius="3xl"
         overflow="hidden"
-        boxShadow="2xl"
+        boxShadow="0 25px 50px -12px rgba(0, 0, 0, 0.5)"
+        bg="rgba(15, 23, 42, 0.6)"
+        backdropFilter="blur(20px)"
+        border="1px solid"
+        borderColor="whiteAlpha.100"
+        zIndex={1}
       >
-        {/* Left Panel - Hidden on mobile */}
+        {/* Left Panel */}
         <Box
           display={["none", "none", "flex"]}
           w="50%"
-          bgImage="url('https://images.unsplash.com/photo-1579548122080-c35fd6820ecb')"
-          bgSize="cover"
-          bgPosition="center"
           position="relative"
+          bg="rgba(0,0,0,0.5)"
+          overflow="hidden"
         >
+          {/* Abstract geometric background instead of unsplash image */}
+          <Box
+             position="absolute"
+             w="150%"
+             h="150%"
+             top="-25%"
+             left="-25%"
+             bgGradient="radial(circle at 30% 70%, rgba(139, 92, 246, 0.2), transparent 40%), radial(circle at 70% 30%, rgba(59, 130, 246, 0.2), transparent 40%)"
+             animation="spin 30s linear infinite"
+             opacity="0.8"
+          />
           <Box
             position="absolute"
             top="0"
             left="0"
             right="0"
             bottom="0"
-            bg="blackAlpha.600"
             display="flex"
             flexDirection="column"
             justifyContent="center"
-            p={10}
+            p={12}
             color="white"
+            zIndex={1}
+            bg="linear-gradient(to right, rgba(0,0,0,0.6) 0%, transparent 100%)"
           >
-            <Text fontSize="4xl" fontWeight="bold" mb={4}>
-              Welcome Back
+            <HStack spacing={3} mb={6}>
+              <Box p={3} bgGradient="linear(to-br, purple.500, blue.500)" rounded="xl">
+                <Icon as={FiMessageSquare} color="white" fontSize="24px" />
+              </Box>
+            </HStack>
+            <Text fontSize="5xl" fontWeight="900" mb={4} lineHeight="1.1" letterSpacing="tight">
+              Welcome<br/>Back to Nova.
             </Text>
-            <Text fontSize="lg" maxW="400px">
-              Stay connected with friends and family through instant messaging
+            <Text fontSize="lg" color="gray.400" maxW="350px">
+              Reconnect with your team instantly. The galaxy's fastest chat awaits.
             </Text>
           </Box>
         </Box>
@@ -63,81 +117,110 @@ const Login = () => {
         {/* Right Panel - Login Form */}
         <Box
           w={["100%", "100%", "50%"]}
-          bg="white"
-          p={[6, 8, 10]}
+          p={[8, 10, 14]}
           display="flex"
           flexDirection="column"
           justifyContent="center"
+          position="relative"
         >
-          <Box display={["block", "block", "none"]} textAlign="center" mb={6}>
-            <Box
-              as={FiLogIn}
-              mx="auto"
-              fontSize="3rem"
-              color="blue.600"
-              mb={2}
-            />
-            <Text fontSize="2xl" fontWeight="bold" color="gray.800">
-              Welcome Back
+          <Box display={["flex", "flex", "none"]} mb={8} alignItems="center" gap={3}>
+            <Box p={2} bgGradient="linear(to-br, purple.500, blue.500)" rounded="lg">
+              <Icon as={FiMessageSquare} color="white" />
+            </Box>
+            <Text fontSize="2xl" fontWeight="bold" color="white">
+              Nova Chat
             </Text>
           </Box>
 
-          <VStack spacing={6} w="100%" maxW="400px" mx="auto">
+          <Text fontSize="3xl" fontWeight="bold" color="white" mb={2}>
+            Sign In
+          </Text>
+          <Text color="gray.400" mb={8}>
+            Enter your details to access your account.
+          </Text>
+
+          <VStack spacing={6} w="100%">
             <FormControl id="email" isRequired>
-              <FormLabel color="gray.700" fontWeight="medium">
-                Email
+              <FormLabel color="gray.300" fontWeight="semibold" fontSize="sm">
+                Email Address
               </FormLabel>
               <Input
                 type="email"
-                placeholder="Enter your email"
+                placeholder="you@example.com"
                 size="lg"
-                bg="gray.50"
-                borderColor="gray.200"
-                _hover={{ borderColor: "blue.500" }}
-                _focus={{ borderColor: "blue.500" }}
+                bg="rgba(255, 255, 255, 0.03)"
+                borderColor="whiteAlpha.100"
+                color="white"
+                _hover={{ borderColor: "purple.400", bg: "rgba(255, 255, 255, 0.05)" }}
+                _focus={{ borderColor: "purple.400", boxShadow: "0 0 0 1px #9f7aea", bg: "rgba(255, 255, 255, 0.08)" }}
+                _placeholder={{ color: "gray.600" }}
+                rounded="xl"
+                height="56px"
               />
             </FormControl>
 
             <FormControl id="password" isRequired>
-              <FormLabel color="gray.700" fontWeight="medium">
-                Password
-              </FormLabel>
+              <HStack justify="space-between" mb={1}>
+                <FormLabel color="gray.300" fontWeight="semibold" fontSize="sm" m={0}>
+                  Password
+                </FormLabel>
+                <Link to="#" style={{ color: "#9f7aea", fontSize: "14px", transition: "color 0.2s" }} onMouseOver={(e) => e.target.style.color = "#b794f4"} onMouseOut={(e) => e.target.style.color = "#9f7aea"}>
+                  Forgot Password?
+                </Link>
+              </HStack>
               <Input
                 type="password"
-                placeholder="Enter your password"
+                placeholder="••••••••"
                 size="lg"
-                bg="gray.50"
-                borderColor="gray.200"
-                _hover={{ borderColor: "blue.500" }}
-                _focus={{ borderColor: "blue.500" }}
+                bg="rgba(255, 255, 255, 0.03)"
+                borderColor="whiteAlpha.100"
+                color="white"
+                _hover={{ borderColor: "purple.400", bg: "rgba(255, 255, 255, 0.05)" }}
+                _focus={{ borderColor: "purple.400", boxShadow: "0 0 0 1px #9f7aea", bg: "rgba(255, 255, 255, 0.08)" }}
+                _placeholder={{ color: "gray.600" }}
+                rounded="xl"
+                height="56px"
               />
             </FormControl>
 
             <Button
-              colorScheme="blue"
+              colorScheme="purple"
               width="100%"
               size="lg"
+              height="56px"
               fontSize="md"
-              leftIcon={<FiLogIn />}
+              rounded="xl"
+              bgGradient="linear(to-r, purple.500, blue.500)"
+              _hover={{ bgGradient: "linear(to-r, purple.600, blue.600)", transform: "translateY(-2px)" }}
+              _active={{ transform: "translateY(0)" }}
+              transition="all 0.2s"
+              mt={2}
+              boxShadow="0 10px 20px -10px rgba(139, 92, 246, 0.5)"
             >
-              Sign In
+              Log In
             </Button>
 
-            <Text color="gray.600">
+            <Text color="gray.400" mt={4}>
               Don't have an account?{" "}
               <Link
                 to="/register"
                 style={{
-                  color: "var(--chakra-colors-blue-600)",
-                  fontWeight: "500",
+                  color: "#9f7aea",
+                  fontWeight: "600",
                 }}
               >
-                Register now
+                Create one now
               </Link>
             </Text>
           </VStack>
         </Box>
-      </Box>
+      </MotionBox>
+      <style>{`
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+      `}</style>
     </Box>
   );
 };

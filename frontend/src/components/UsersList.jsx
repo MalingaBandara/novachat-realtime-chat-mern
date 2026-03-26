@@ -7,8 +7,12 @@ import {
   Icon,
   Tooltip,
   Avatar,
+  AvatarBadge,
 } from "@chakra-ui/react";
-import { FiUsers, FiCircle } from "react-icons/fi";
+import { FiUsers, FiCircle, FiSearch, FiMoreHorizontal } from "react-icons/fi";
+import { motion } from "framer-motion";
+
+const MotionBox = motion(Box);
 
 const UsersList = ({ users }) => {
   return (
@@ -16,93 +20,186 @@ const UsersList = ({ users }) => {
       h="100%"
       w="100%"
       borderLeft="1px solid"
-      borderColor="gray.200"
-      bg="white"
+      borderColor="whiteAlpha.100"
+      bg="rgba(15, 23, 42, 0.5)"
+      backdropFilter="blur(16px)"
       position="relative"
       overflow="hidden"
+      display="flex"
+      flexDirection="column"
     >
       {/* Header */}
       <Flex
         p={5}
         borderBottom="1px solid"
-        borderColor="gray.200"
-        bg="white"
+        borderColor="whiteAlpha.100"
+        bg="rgba(15, 23, 42, 0.6)"
         align="center"
         position="sticky"
         top={0}
-        zIndex={1}
-        boxShadow="sm"
+        zIndex={2}
+        backdropFilter="blur(16px)"
+        justify="space-between"
       >
-        <Icon as={FiUsers} fontSize="20px" color="blue.500" mr={2} />
-        <Text fontSize="lg" fontWeight="bold" color="gray.700">
-          Members
-        </Text>
-        <Badge
-          ml={2}
-          colorScheme="blue"
-          borderRadius="full"
-          px={2}
-          py={0.5}
-          fontSize="xs"
-        >
-          {users.length}
-        </Badge>
+        <Flex align="center">
+          <Icon as={FiUsers} fontSize="20px" color="blue.400" mr={3} />
+          <Text fontSize="lg" fontWeight="800" color="white" letterSpacing="tight">
+            Members
+          </Text>
+          <Badge
+            ml={3}
+            colorScheme="blue"
+            borderRadius="full"
+            px={2}
+            py={0.5}
+            fontSize="10px"
+            bg="rgba(59, 130, 246, 0.2)"
+            color="blue.300"
+            border="1px solid"
+            borderColor="blue.500"
+          >
+            {users.length}
+          </Badge>
+        </Flex>
+        <Icon as={FiSearch} fontSize="18px" color="gray.400" cursor="pointer" _hover={{ color: "blue.300" }} transition="all 0.2s" />
       </Flex>
 
       {/* Users List */}
-      <Box flex="1" overflowY="auto" p={4}>
-        <VStack align="stretch" spacing={3}>
-          {users.map((user) => (
-            <Box key={user._id}>
-              <Tooltip label={`${user.username} is online`} placement="left">
+      <Box flex="1" overflowY="auto" p={5}
+        sx={{
+          "&::-webkit-scrollbar": { width: "4px" },
+          "&::-webkit-scrollbar-track": { background: "transparent" },
+          "&::-webkit-scrollbar-thumb": { background: "rgba(255,255,255,0.1)", borderRadius: "24px" },
+          "&::-webkit-scrollbar-thumb:hover": { background: "rgba(255,255,255,0.2)" },
+        }}
+      >
+        <Text fontSize="xs" fontWeight="bold" color="gray.500" textTransform="uppercase" letterSpacing="widest" mb={4} ml={2}>
+          Online — {users.filter(u => u.isOnline).length}
+        </Text>
+        <VStack align="stretch" spacing={3} mb={6}>
+          {users.filter(u => u.isOnline).map((user, index) => (
+            <MotionBox
+              key={user.id}
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.3, delay: index * 0.05 }}
+            >
+              <Tooltip label={`${user.username} is online`} placement="left" bg="purple.600" color="white" hasArrow>
                 <Flex
                   p={3}
-                  bg="white"
-                  borderRadius="lg"
-                  shadow="sm"
+                  bg="rgba(255, 255, 255, 0.03)"
+                  borderRadius="2xl"
                   align="center"
-                  borderWidth="1px"
-                  borderColor="gray.100"
+                  border="1px solid"
+                  borderColor="whiteAlpha.50"
+                  _hover={{
+                    bg: "rgba(255, 255, 255, 0.08)",
+                    transform: "translateY(-1px)",
+                    borderColor: "whiteAlpha.200",
+                    boxShadow: "0 5px 15px -5px rgba(0,0,0,0.3)"
+                  }}
+                  transition="all 0.2s cubic-bezier(0.4, 0, 0.2, 1)"
+                  cursor="pointer"
+                  position="relative"
                 >
                   <Avatar
                     size="sm"
                     name={user.username}
-                    bg="blue.500"
+                    bgGradient="linear(to-br, purple.400, blue.400)"
                     color="white"
-                    mr={3}
-                  />
+                    mr={4}
+                    border="2px solid"
+                    borderColor="rgba(255,255,255,0.1)"
+                  >
+                    <AvatarBadge boxSize="1.25em" bg="green.400" border="2px solid" borderColor="#0f172a" />
+                  </Avatar>
+                  
                   <Box flex="1">
                     <Text
                       fontSize="sm"
-                      fontWeight="medium"
-                      color="gray.700"
+                      fontWeight="bold"
+                      color="white"
                       noOfLines={1}
+                      letterSpacing="tight"
                     >
                       {user.username}
                     </Text>
+                    <Text fontSize="xs" color="gray.400">Typing...</Text>
                   </Box>
-                  <Flex
-                    align="center"
-                    bg="green.50"
-                    px={2}
-                    py={1}
-                    borderRadius="full"
-                  >
-                    <Icon
-                      as={FiCircle}
-                      color="green.400"
-                      fontSize="8px"
-                      mr={1}
-                    />
-                    <Text fontSize="xs" color="green.600" fontWeight="medium">
-                      online
-                    </Text>
-                  </Flex>
+                  <Icon as={FiMoreHorizontal} color="gray.600" />
                 </Flex>
               </Tooltip>
-            </Box>
+            </MotionBox>
           ))}
         </VStack>
+
+        <Text fontSize="xs" fontWeight="bold" color="gray.500" textTransform="uppercase" letterSpacing="widest" mb={4} ml={2}>
+          Offline — {users.filter(u => !u.isOnline).length}
+        </Text>
+        <VStack align="stretch" spacing={2}>
+          {users.filter(u => !u.isOnline).map((user, index) => (
+             <MotionBox
+             key={user.id}
+             initial={{ opacity: 0, x: 20 }}
+             animate={{ opacity: 1, x: 0 }}
+             transition={{ duration: 0.3, delay: index * 0.05 }}
+           >
+              <Flex
+                p={3}
+                bg="transparent"
+                borderRadius="2xl"
+                align="center"
+                border="1px solid"
+                borderColor="transparent"
+                _hover={{
+                  bg: "rgba(255, 255, 255, 0.02)",
+                  borderColor: "whiteAlpha.50"
+                }}
+                transition="all 0.2s"
+                cursor="pointer"
+              >
+                <Avatar
+                  size="sm"
+                  name={user.username}
+                  bg="gray.600"
+                  color="white"
+                  mr={4}
+                  opacity={0.6}
+                >
+                   <AvatarBadge boxSize="1.25em" bg="gray.500" border="2px solid" borderColor="#0f172a" />
+                </Avatar>
+                
+                <Box flex="1" opacity={0.6}>
+                  <Text
+                    fontSize="sm"
+                    fontWeight="medium"
+                    color="gray.400"
+                    noOfLines={1}
+                  >
+                    {user.username}
+                  </Text>
+                  <Text fontSize="xs" color="gray.600">Last seen 2h ago</Text>
+                </Box>
+              </Flex>
+            </MotionBox>
+          ))}
+        </VStack>
+      </Box>
+
+      {/* Current User Footer */}
+      <Box p={4} borderTop="1px solid" borderColor="whiteAlpha.100" bg="rgba(0,0,0,0.3)">
+        <Flex align="center" justify="space-between">
+          <Flex align="center">
+            <Avatar size="sm" name="You" bgGradient="linear(to-br, purple.500, blue.500)" mr={3}>
+              <AvatarBadge boxSize="1em" bg="green.400" border="2px solid" borderColor="#0f172a" />
+            </Avatar>
+            <Box>
+              <Text fontSize="sm" fontWeight="bold" color="white">You</Text>
+              <Text fontSize="xs" color="gray.400">#NovaAdmin</Text>
+            </Box>
+          </Flex>
+          <Icon as={FiCircle} color="purple.400" fontSize="12px" />
+        </Flex>
       </Box>
     </Box>
   );
