@@ -67,6 +67,7 @@ const Login = () => {
           isClosable: true, //? Allows user to manually close the toast
         });
 
+        setLoading(false); //? Set loading state back to false
     }
   };
 
