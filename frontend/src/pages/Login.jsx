@@ -40,12 +40,16 @@ const Login = () => {
     setLoading(true);   //! Set loading state to true while API call is in progress
 
     try {
-      //* Send POST request to backend login API
-      const response = await axios.post( 'http://localhost:5000/api/users/login',
+
+       //* Send POST request to backend login API with user credentials
+      const { data } = await axios.post( 'http://localhost:5000/api/users/login',
         { email, password } //? Sending user credentials in request body
       );
 
-      console.log(response); //* Log response for debugging
+      //* Store user data (including token) in localStorage
+      localStorage.setItem( 'userInfo', JSON.stringify(data) ); //? This allows user to stay logged in across page refreshes
+
+      navigate( "/chat" );  //* Redirect user to chat page after successful login
 
     } catch (error) {
 
