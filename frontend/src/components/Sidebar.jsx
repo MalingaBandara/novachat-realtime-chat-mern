@@ -19,16 +19,48 @@ import {
   Badge,
   Tooltip,
 } from "@chakra-ui/react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { FiLogOut, FiPlus, FiUsers, FiMessageSquare } from "react-icons/fi";
 import { Link } from "react-router-dom";
 
+
+// -----------------SIDEBAR COMPONENT (Handles group-related UI actions (create, join, leave, etc.)) ------------
 const Sidebar = () => {
-  const { isOpen, onOpen, onClose } = useDisclosure();
-  const [newGroupName, setNewGroupName] = useState("");
-  const [newGroupDescription, setNewGroupDescription] = useState("");
-  const toast = useToast();
-  const isAdmin = true;
+  
+  const { isOpen, onOpen, onClose } = useDisclosure(); //* Chakra UI hook to control modal/drawer state (isOpen → state, onOpen/onClose → handlers)
+
+  //* State for creating a new group
+  const [newGroupName, setNewGroupName] = useState(""); //? Stores group name input
+  const [newGroupDescription, setNewGroupDescription] = useState("");  //? Stores group description input
+
+  const toast = useToast();  //? Hook to show toast notifications
+
+  const [isAdmin, setIsAdmin] = useState( false ); //* State to track whether logged-in user is admin
+
+
+  // *** ============= LIFECYCLE HOOK (RUN ON COMPONENT MOUNT) ==========
+  useEffect( () => {
+    checkAdminStatus(); //? Check admin status when component loads
+  }, [] );
+
+
+    // <> =============  CHECK ADMIN STATUS (Determines if the logged-in user has admin privileges) ==========
+    const checkAdminStatus = () => {
+      const userInfo = JSON.parse( localStorage.getItem( "userInfo" ) || {} );
+
+      //! Update Admin Status
+      setIsAdmin( userInfo?.isAdmin || false );
+    }
+
+
+    // TODO: fetch all groups
+    // Todo: fetch users group
+    // TODO: Create groups
+    // TODO: logout
+    // TODO: Join group
+    // TODO: Leave group
+
+
 
   // Sample groups data
   const groups = [
