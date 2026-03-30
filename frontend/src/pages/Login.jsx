@@ -66,11 +66,10 @@ const Login = () => {
           duration: 5000,  //? Auto-close after 5 seconds
           isClosable: true, //? Allows user to manually close the toast
         });
-
-        setLoading(false); //? Set loading state back to false
     }
+    
+     setLoading(false); //? Set loading state back to false
   };
-
 
   return (
     <Box

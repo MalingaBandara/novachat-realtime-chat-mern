@@ -1,3 +1,4 @@
+
 import {
   Box,
   Button,
@@ -8,14 +9,66 @@ import {
   Text,
   HStack,
   Icon,
+  useToast
 } from "@chakra-ui/react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { FiUserPlus, FiMessageSquare } from "react-icons/fi";
 import { motion } from "framer-motion";
-
 const MotionBox = motion(Box);
 
+// +++++++++++++ IMPORTING REQUIRED HOOKS & LIBRARIES +++++++++++++++++++++
+import { useState } from "react"; //? React Hook for managing component state
+import axios from "axios"; //? Library for making HTTP requests
+
+
+// -----------------REGISTER COMPONENT (Handles user registration functionality) ------------
 const Register = () => {
+
+  //<> ========== STATE MANAGEMENT  ==========
+  const [email, setEmail] = useState(""); //? Stores user email input
+  const [password, setPassword] = useState(""); //? Stores user password input
+  const [username, setUsername] = useState(""); //? Stores user password input
+  const [loading, setLoading] = useState(""); //? Tracks loading state during API call
+
+  const toast = useToast(); //? Hook to show toast notifications (UI feedback)
+  const navigate = useNavigate(); //? Hook to programmatically navigate between routes
+
+  
+  // *** ============= FORM SUBMIT HANDLER (Handles registration form submission) ==========
+  const handleSubmit = async (e) => {
+    e.preventDefault(); //? Prevent default form submission behavior (page reload)
+    setLoading(true);   //! Enable loading state during API request
+
+    try {
+
+      //* Send POST request to backend register API
+      const { data } = await axios.post(
+        "http://localhost:5000/api/users/register",
+        { email, password, username}, //? Sending username along with email & password (request body)
+      );
+
+      // console.log(data); //* (Optional) You can log response for debugging
+
+      navigate("/login");  //* Redirect user to login page after successful registration
+
+    } catch (error) {
+      //* Show toast notification to inform user about the failure
+      toast({
+         title: "Registration Failed", //? Error title specific to register flow
+
+          //* Show backend error message if available
+          description: error.response?.data?.message || "An error occurred during registration.",
+
+          status: "error", //? Toast type (error UI)
+          duration: 5000,  //? Auto close after 5 seconds
+          isClosable: true, //? Allow manual close
+      });
+    } 
+    
+    setLoading(false); //? Disable loading state after API completes (success or error)
+  };
+
+
   return (
     <Box
       w="100%"
@@ -76,14 +129,14 @@ const Register = () => {
           overflow="hidden"
         >
           <Box
-             position="absolute"
-             w="150%"
-             h="150%"
-             top="-25%"
-             left="-25%"
-             bgGradient="radial(circle at 30% 70%, rgba(139, 92, 246, 0.2), transparent 40%), radial(circle at 70% 30%, rgba(59, 130, 246, 0.2), transparent 40%)"
-             animation="spin 30s linear infinite reverse"
-             opacity="0.8"
+            position="absolute"
+            w="150%"
+            h="150%"
+            top="-25%"
+            left="-25%"
+            bgGradient="radial(circle at 30% 70%, rgba(139, 92, 246, 0.2), transparent 40%), radial(circle at 70% 30%, rgba(59, 130, 246, 0.2), transparent 40%)"
+            animation="spin 30s linear infinite reverse"
+            opacity="0.8"
           />
           <Box
             position="absolute"
@@ -100,15 +153,28 @@ const Register = () => {
             bg="linear-gradient(to right, rgba(0,0,0,0.6) 0%, transparent 100%)"
           >
             <HStack spacing={3} mb={6}>
-              <Box p={3} bgGradient="linear(to-br, purple.500, blue.500)" rounded="xl">
+              <Box
+                p={3}
+                bgGradient="linear(to-br, purple.500, blue.500)"
+                rounded="xl"
+              >
                 <Icon as={FiMessageSquare} color="white" fontSize="24px" />
               </Box>
             </HStack>
-            <Text fontSize="5xl" fontWeight="900" mb={4} lineHeight="1.1" letterSpacing="tight">
-              Join Nova<br/>Community.
+            <Text
+              fontSize="5xl"
+              fontWeight="900"
+              mb={4}
+              lineHeight="1.1"
+              letterSpacing="tight"
+            >
+              Join Nova
+              <br />
+              Community.
             </Text>
             <Text fontSize="lg" color="gray.400" maxW="350px">
-              Connect with your friends securely and start chatting instantly globally.
+              Connect with your friends securely and start chatting instantly
+              globally.
             </Text>
           </Box>
         </Box>
@@ -122,8 +188,17 @@ const Register = () => {
           justifyContent="center"
           position="relative"
         >
-          <Box display={["flex", "flex", "none"]} mb={8} alignItems="center" gap={3}>
-            <Box p={2} bgGradient="linear(to-br, purple.500, blue.500)" rounded="lg">
+          <Box
+            display={["flex", "flex", "none"]}
+            mb={8}
+            alignItems="center"
+            gap={3}
+          >
+            <Box
+              p={2}
+              bgGradient="linear(to-br, purple.500, blue.500)"
+              rounded="lg"
+            >
               <Icon as={FiMessageSquare} color="white" />
             </Box>
             <Text fontSize="2xl" fontWeight="bold" color="white">
@@ -144,14 +219,24 @@ const Register = () => {
                 Username
               </FormLabel>
               <Input
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+
                 type="text"
                 placeholder="Choose a cool username"
                 size="md"
                 bg="rgba(255, 255, 255, 0.03)"
                 borderColor="whiteAlpha.100"
                 color="white"
-                _hover={{ borderColor: "purple.400", bg: "rgba(255, 255, 255, 0.05)" }}
-                _focus={{ borderColor: "purple.400", boxShadow: "0 0 0 1px #9f7aea", bg: "rgba(255, 255, 255, 0.08)" }}
+                _hover={{
+                  borderColor: "purple.400",
+                  bg: "rgba(255, 255, 255, 0.05)",
+                }}
+                _focus={{
+                  borderColor: "purple.400",
+                  boxShadow: "0 0 0 1px #9f7aea",
+                  bg: "rgba(255, 255, 255, 0.08)",
+                }}
                 _placeholder={{ color: "gray.600" }}
                 rounded="xl"
                 height="50px"
@@ -163,14 +248,24 @@ const Register = () => {
                 Email Address
               </FormLabel>
               <Input
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+
                 type="email"
                 placeholder="you@example.com"
                 size="md"
                 bg="rgba(255, 255, 255, 0.03)"
                 borderColor="whiteAlpha.100"
                 color="white"
-                _hover={{ borderColor: "purple.400", bg: "rgba(255, 255, 255, 0.05)" }}
-                _focus={{ borderColor: "purple.400", boxShadow: "0 0 0 1px #9f7aea", bg: "rgba(255, 255, 255, 0.08)" }}
+                _hover={{
+                  borderColor: "purple.400",
+                  bg: "rgba(255, 255, 255, 0.05)",
+                }}
+                _focus={{
+                  borderColor: "purple.400",
+                  boxShadow: "0 0 0 1px #9f7aea",
+                  bg: "rgba(255, 255, 255, 0.08)",
+                }}
                 _placeholder={{ color: "gray.600" }}
                 rounded="xl"
                 height="50px"
@@ -182,14 +277,24 @@ const Register = () => {
                 Password
               </FormLabel>
               <Input
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+
                 type="password"
                 placeholder="••••••••"
                 size="md"
                 bg="rgba(255, 255, 255, 0.03)"
                 borderColor="whiteAlpha.100"
                 color="white"
-                _hover={{ borderColor: "purple.400", bg: "rgba(255, 255, 255, 0.05)" }}
-                _focus={{ borderColor: "purple.400", boxShadow: "0 0 0 1px #9f7aea", bg: "rgba(255, 255, 255, 0.08)" }}
+                _hover={{
+                  borderColor: "purple.400",
+                  bg: "rgba(255, 255, 255, 0.05)",
+                }}
+                _focus={{
+                  borderColor: "purple.400",
+                  boxShadow: "0 0 0 1px #9f7aea",
+                  bg: "rgba(255, 255, 255, 0.08)",
+                }}
                 _placeholder={{ color: "gray.600" }}
                 rounded="xl"
                 height="50px"
@@ -197,6 +302,9 @@ const Register = () => {
             </FormControl>
 
             <Button
+              onClick={handleSubmit}
+              isLoading={loading}
+
               colorScheme="purple"
               width="100%"
               size="lg"
@@ -204,7 +312,10 @@ const Register = () => {
               fontSize="md"
               rounded="xl"
               bgGradient="linear(to-r, purple.500, blue.500)"
-              _hover={{ bgGradient: "linear(to-r, purple.600, blue.600)", transform: "translateY(-2px)" }}
+              _hover={{
+                bgGradient: "linear(to-r, purple.600, blue.600)",
+                transform: "translateY(-2px)",
+              }}
               _active={{ transform: "translateY(0)" }}
               transition="all 0.2s"
               mt={4}
