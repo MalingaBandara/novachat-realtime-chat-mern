@@ -23,66 +23,70 @@ import { useEffect, useState } from "react";
 import { FiLogOut, FiPlus, FiUsers, FiMessageSquare } from "react-icons/fi";
 import { Link } from "react-router-dom";
 
+import axios from "axios"; //? Library for making HTTP requests
+
 
 // -----------------SIDEBAR COMPONENT (Handles group-related UI actions (create, join, leave, etc.)) ------------
 const Sidebar = () => {
-  
-  const { isOpen, onOpen, onClose } = useDisclosure(); //* Chakra UI hook to control modal/drawer state (isOpen → state, onOpen/onClose → handlers)
 
-  //* State for creating a new group
-  const [newGroupName, setNewGroupName] = useState(""); //? Stores group name input
-  const [newGroupDescription, setNewGroupDescription] = useState("");  //? Stores group description input
+   const { isOpen, onOpen, onClose } = useDisclosure(); //* Chakra UI hook to control modal/drawer state (isOpen → state, onOpen/onClose → handlers)
 
-  const toast = useToast();  //? Hook to show toast notifications
+   const [newGroupName, setNewGroupName] = useState(""); //? Stores group name input
+   const [newGroupDescription, setNewGroupDescription] = useState("");  //? Stores group description input
 
-  const [isAdmin, setIsAdmin] = useState( false ); //* State to track whether logged-in user is admin
+   const [groups, setGroups] = useState([]); //? State to hold list of groups fetched from backend (array of group objects)
 
+   const toast = useToast();  //? Hook to show toast notifications
 
-  // *** ============= LIFECYCLE HOOK (RUN ON COMPONENT MOUNT) ==========
-  useEffect( () => {
-    checkAdminStatus(); //? Check admin status when component loads
-  }, [] );
+   const [isAdmin, setIsAdmin] = useState( false ); //* State to track whether logged-in user is admin
 
 
-    // <> =============  CHECK ADMIN STATUS (Determines if the logged-in user has admin privileges) ==========
-    const checkAdminStatus = () => {
-      const userInfo = JSON.parse( localStorage.getItem( "userInfo" ) || {} );
-
-      //! Update Admin Status
-      setIsAdmin( userInfo?.isAdmin || false );
-    }
+   // *** =========== LIFECYCLE HOOK (RUN ON COMPONENT MOUNT) ==========
+   useEffect( () => {
+     checkAdminStatus(); //? Check admin status when component loads
+     fetchGroups(); //? Fetch groups when component loads
+   }, [] );
 
 
-    // TODO: fetch all groups
+     // <> =============  CHECK ADMIN STATUS (Determines if the logged-in user has admin privileges) ==========
+     const checkAdminStatus = () => {
+       const userInfo = JSON.parse( localStorage.getItem( "userInfo" ) || {} );  //* Retrieve user info from localStorage (user data after login)
+ 
+       setIsAdmin( userInfo?.user.isAdmin || false ); //! Update admin state (If userInfo.isAdmin exists → set true/false accordingly)
+     }
+
+
+    // <> =============  FETCH ALL GROUPS (Retrieves all groups from backend API - Requires JWT auth) ==========
+    const fetchGroups = async () => {
+
+      try {
+
+        const userInfo = JSON.parse( localStorage.getItem( "userInfo" ) || {} ); //* Get stored user info (includes token)
+        const token = userInfo.user.token; //* Extract JWT token for authorization
+
+        //* Send GET request to fetch all groups
+        const { data } = await axios.get( "http://localhost:5000/api/groups", {
+            headers: {
+              Authorization: `Bearer ${token}` //* Send token in header (required for protected route)
+            }
+        } );
+        
+        // console.log(data); //* Debug: view fetched groups
+        setGroups(data); //* Store groups in state (array of group objects)
+
+      } catch (error) {
+        console.error("Error fetching groups:", error); //! Handle error (network/server/token issues)
+      }
+    };
+
+
+
     // Todo: fetch users group
     // TODO: Create groups
     // TODO: logout
     // TODO: Join group
     // TODO: Leave group
 
-
-
-  // Sample groups data
-  const groups = [
-    {
-      id: 1,
-      name: "Development Team",
-      description: "Main development team channel for daily updates",
-      isJoined: true,
-    },
-    {
-      id: 2,
-      name: "Design Team",
-      description: "Collaboration space for designers",
-      isJoined: false,
-    },
-    {
-      id: 3,
-      name: "Marketing",
-      description: "Marketing team discussions and campaigns",
-      isJoined: true,
-    },
-  ];
 
   return (
     <Box
