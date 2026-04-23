@@ -97,8 +97,51 @@ const Sidebar = ( { setSelectedGroup } ) => {
     };
 
 
+    // <> ============= HANDLE CREATE GROUP (Sends new group data to backend API - Requires JWT auth) =============
+    const handleCreateGroup = async ()=> {
 
-    // TODO: Create groups
+      try {
+
+        const userInfo = JSON.parse( localStorage.getItem( "userInfo" ) || {} ); //* Get stored user info (includes token)
+        const token = userInfo.user.token; //* Extract JWT token for authorization
+
+         //* Send POST request with new group name and description to create the group
+        await axios.post( "http://localhost:5000/api/groups",  {
+          name: newGroupName,
+          description: newGroupDescription
+         }, {
+          headers: {
+            Authorization: `Bearer ${token}` //* Send token in header (required for protected route)
+           }
+        } );
+
+        toast({
+          title: 'Group Created',
+          status: "success",
+          duration: 3000,
+          isClosable: true
+        }); //* Notify user of success
+
+        onClose(); //* Close the create group modal
+
+        fetchGroups(); //* Refresh group list to include the newly created group
+
+        setNewGroupName(""); //* Reset group name input
+        setNewGroupDescription(""); //* Reset group description input
+        
+        
+      } catch (error) {
+        toast({
+          title: 'Error Creating Group',
+          status: "error",
+          duration: 3000,
+          isClosable: true,
+          description: error.response?.data?.message || "An error occurred while creating the group."
+        }); //! Show error toast — uses server message if available, falls back to generic message
+      }
+    };
+
+
     // TODO: logout
     // TODO: Join group
     // TODO: Leave group
@@ -304,20 +347,7 @@ const Sidebar = ( { setSelectedGroup } ) => {
               bgGradient="linear(to-r, purple.500, blue.500)"
               _hover={{ bgGradient: "linear(to-r, purple.600, blue.600)", transform: "translateY(-1px)" }}
               boxShadow="0 10px 20px -10px rgba(139, 92, 246, 0.5)"
-              onClick={() => {
-                toast({
-                  title: "Channel Initialized",
-                  description: "Your new channel is ready for transmission.",
-                  status: "success",
-                  duration: 3000,
-                  isClosable: true,
-                  position: "bottom-right",
-                  variant: "solid",
-                });
-                onClose();
-                setNewGroupName("");
-                setNewGroupDescription("");
-              }}
+              onClick={ handleCreateGroup }
             >
               Initialize Channel
             </Button>
