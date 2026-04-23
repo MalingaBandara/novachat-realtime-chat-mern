@@ -27,7 +27,7 @@ import axios from "axios"; //? Library for making HTTP requests
 
 
 // -----------------SIDEBAR COMPONENT (Handles group-related UI actions (create, join, leave, etc.)) ------------
-const Sidebar = () => {
+const Sidebar = ( { setSelectedGroup } ) => {
 
    const { isOpen, onOpen, onClose } = useDisclosure(); //* Chakra UI hook to control modal/drawer state (isOpen → state, onOpen/onClose → handlers)
 
@@ -35,6 +35,7 @@ const Sidebar = () => {
    const [newGroupDescription, setNewGroupDescription] = useState("");  //? Stores group description input
 
    const [groups, setGroups] = useState([]); //? State to hold list of groups fetched from backend (array of group objects)
+   const [ userGroups, setUserGroups ] = useState( [] ); //? Stores IDs of groups the current user has joined (used to track membership)
 
    const toast = useToast();  //? Hook to show toast notifications
 
@@ -70,9 +71,25 @@ const Sidebar = () => {
               Authorization: `Bearer ${token}` //* Send token in header (required for protected route)
             }
         } );
-        
+
         // console.log(data); //* Debug: view fetched groups
         setGroups(data); //* Store groups in state (array of group objects)
+
+        
+        //* ── GET USER GROUPS ──────────────────────────────────────────────────────
+        //* From all fetched groups, isolate only the ones the current user belongs to.
+        //* Each group has a `members` array of user objects — we check if the current
+        //* user's ID appears in that list, then extract just the group IDs.
+        const userGroupIds = data?.filter( (group) => {
+
+          //* For each group, scan its members array to see if the logged-in user is listed.
+          //* `some()` returns true as soon as one member's _id matches the current user's _id.
+          return group?.members?.some( member => member?._id === userInfo?.user?._id );
+
+        }).map( group => group?._id ); //* Collapse the matched group objects down to just their IDs
+
+        setUserGroups( userGroupIds ); //* Store the user's group ID list in state (used to highlight/filter joined groups)
+        
 
       } catch (error) {
         console.error("Error fetching groups:", error); //! Handle error (network/server/token issues)
@@ -81,7 +98,6 @@ const Sidebar = () => {
 
 
 
-    // Todo: fetch users group
     // TODO: Create groups
     // TODO: logout
     // TODO: Join group
@@ -152,25 +168,27 @@ const Sidebar = () => {
               p={4}
               cursor="pointer"
               borderRadius="2xl"
-              bg={group.isJoined ? "rgba(139, 92, 246, 0.15)" : "rgba(255, 255, 255, 0.03)"}
+              bg={ userGroups.includes(group?._id) ? "rgba(139, 92, 246, 0.15)" : "rgba(255, 255, 255, 0.03)"}
               border="1px solid"
-              borderColor={group.isJoined ? "rgba(139, 92, 246, 0.3)" : "whiteAlpha.100"}
+              borderColor={ userGroups.includes(group?._id) ? "rgba(139, 92, 246, 0.3)" : "whiteAlpha.100"}
               transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
               _hover={{
                 transform: "translateY(-2px)",
-                borderColor: group.isJoined ? "purple.400" : "whiteAlpha.300",
-                bg: group.isJoined ? "rgba(139, 92, 246, 0.25)" : "rgba(255, 255, 255, 0.08)",
-                boxShadow: group.isJoined ? "0 4px 20px -5px rgba(139, 92, 246, 0.3)" : "none"
+                borderColor: userGroups.includes(group?._id) ? "purple.400" : "whiteAlpha.300",
+                bg: userGroups.includes(group?._id) ? "rgba(139, 92, 246, 0.25)" : "rgba(255, 255, 255, 0.08)",
+                boxShadow: userGroups.includes(group?._id) ? "0 4px 20px -5px rgba(139, 92, 246, 0.3)" : "none"
               }}
             >
               <Flex justify="space-between" align="center">
-                <Box flex="1">
+                <Box onClick={
+                  ()=> userGroups.includes(group?._id) && setSelectedGroup(group)
+                } flex="1">
                   <Flex align="center" mb={1}>
-                    <Icon as={FiUsers} color={group.isJoined ? "purple.300" : "gray.400"} mr={2} fontSize="sm" />
+                    <Icon as={FiUsers} color={ userGroups.includes(group?._id) ? "purple.300" : "gray.400"} mr={2} fontSize="sm" />
                     <Text fontWeight="600" color="white" fontSize="sm">
                       {group.name}
                     </Text>
-                    {group.isJoined && (
+                    { userGroups.includes(group?._id) && (
                       <Badge ml={2} colorScheme="purple" variant="solid" bg="purple.500" rounded="full" px={2} fontSize="10px">
                         Joined
                       </Badge>
@@ -182,19 +200,19 @@ const Sidebar = () => {
                 </Box>
                 <Button
                   size="xs"
-                  colorScheme={group.isJoined ? "whiteAlpha" : "purple"}
-                  variant={group.isJoined ? "ghost" : "solid"}
+                  colorScheme={ userGroups.includes(group?._id) ? "whiteAlpha" : "purple"}
+                  variant={ userGroups.includes(group?._id) ? "ghost" : "solid"}
                   ml={3}
-                  bg={group.isJoined ? "transparent" : "rgba(139, 92, 246, 0.5)"}
-                  color={group.isJoined ? "purple.300" : "white"}
+                  bg={ userGroups.includes(group?._id) ? "transparent" : "rgba(139, 92, 246, 0.5)"}
+                  color={ userGroups.includes(group?._id) ? "purple.300" : "white"}
                   _hover={{
-                    bg: group.isJoined ? "whiteAlpha.200" : "purple.500",
-                    color: group.isJoined ? "red.300" : "white"
+                    bg: userGroups.includes(group?._id) ? "whiteAlpha.200" : "purple.500",
+                    color: userGroups.includes(group?._id) ? "red.300" : "white"
                   }}
                   rounded="full"
                   px={4}
                 >
-                  {group.isJoined ? "Leave" : "Join"}
+                  { userGroups.includes(group?._id) ? "Leave" : "Join"}
                 </Button>
               </Flex>
             </Box>
