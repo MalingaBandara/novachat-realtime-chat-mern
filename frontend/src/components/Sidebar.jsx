@@ -142,6 +142,48 @@ const Sidebar = ( { setSelectedGroup } ) => {
     };
 
 
+    // <> ============= HANDLE JOIN GROUP (Sends join request to backend, refreshes group list, selects joined group) =============
+    const handleJoinGroup = async ( groupId )=> {
+      
+      try {
+        
+        const userInfo = JSON.parse( localStorage.getItem( "userInfo" ) || {} ); //* Get stored user info (includes token)
+        const token = userInfo.user.token; //* Extract JWT token for authorization
+
+        //* POST to join endpoint — body is empty ({}) since groupId is passed as a URL param and user is identified via token
+        await axios.post( `http://localhost:5000/api/groups/${groupId}/join`,  
+          {}, 
+          {
+            headers: {
+              Authorization: `Bearer ${token}` //* Send token in header (required for protected route)
+            },
+        } );
+
+        await fetchGroups(); //* Re-fetch all groups to get updated members list (reflects the join)
+
+        setSelectedGroup( groups.find( (g)=> g?._id === groupId ) ); //* Select the joined group from updated list
+
+        toast({
+          title: 'Joined group successfully',
+          status: "success",
+          duration: 3000,
+          isClosable: true
+        }); // Show success message to user
+        
+      } catch (error) {
+        console.log(error);
+        toast({
+          title: 'Error Joining Group',
+          status: "error",
+          duration: 3000,
+          isClosable: true,
+          description: error?.response?.data?.message || "An error occurred while joining the group."
+        });
+      }
+
+    };
+
+
     // TODO: logout
     // TODO: Join group
     // TODO: Leave group
@@ -223,9 +265,7 @@ const Sidebar = ( { setSelectedGroup } ) => {
               }}
             >
               <Flex justify="space-between" align="center">
-                <Box onClick={
-                  ()=> userGroups.includes(group?._id) && setSelectedGroup(group)
-                } flex="1">
+                <Box onClick={ ()=>  setSelectedGroup(group) } flex="1">
                   <Flex align="center" mb={1}>
                     <Icon as={FiUsers} color={ userGroups.includes(group?._id) ? "purple.300" : "gray.400"} mr={2} fontSize="sm" />
                     <Text fontWeight="600" color="white" fontSize="sm">
@@ -246,6 +286,9 @@ const Sidebar = ( { setSelectedGroup } ) => {
                   colorScheme={ userGroups.includes(group?._id) ? "whiteAlpha" : "purple"}
                   variant={ userGroups.includes(group?._id) ? "ghost" : "solid"}
                   ml={3}
+
+                  onClick={ ()=> handleJoinGroup( group?._id) } // Call handleJoinGroup when "Join" button is clicked
+
                   bg={ userGroups.includes(group?._id) ? "transparent" : "rgba(139, 92, 246, 0.5)"}
                   color={ userGroups.includes(group?._id) ? "purple.300" : "white"}
                   _hover={{

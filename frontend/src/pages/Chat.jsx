@@ -1,8 +1,12 @@
 import { Box, Flex } from "@chakra-ui/react";
 import Sidebar from "../components/Sidebar";
 import ChatArea from "../components/ChatArea";
+import { useEffect, useState } from "react";
 
 const Chat = () => {
+
+   const [selectedGroup, setSelectedGroup] = useState(null);
+
   return (
     <Flex h="100vh" bg="#050505" overflow="hidden" position="relative" fontFamily="'Inter', sans-serif">
       {/* Background glow for the entire chat app */}
@@ -30,7 +34,7 @@ const Chat = () => {
       {/* Main Container */}
       <Flex w="100%" h="100%" zIndex={1} bg="rgba(0,0,0,0.2)" backdropFilter="blur(20px)">
         <Box w="300px" borderRight="1px solid" borderColor="whiteAlpha.100" bg="rgba(15, 23, 42, 0.4)">
-          <Sidebar />
+          <Sidebar setSelectedGroup={setSelectedGroup} />
         </Box>
         <Box flex="1">
           <ChatArea />
