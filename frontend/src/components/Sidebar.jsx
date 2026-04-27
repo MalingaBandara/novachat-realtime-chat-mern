@@ -184,6 +184,47 @@ const Sidebar = ( { setSelectedGroup } ) => {
     };
 
 
+    // <> ============= HANDLE LEAVE GROUP (Sends leave request, refreshes groups, and clears selected group.) =============
+     const handleLeaveGroup = async ( groupId )=> {
+      
+      try {
+        
+        const userInfo = JSON.parse( localStorage.getItem( "userInfo" ) || {} ); //* Get stored user info (includes token)
+        const token = userInfo.user.token; //* Extract JWT token for authorization
+
+        // Send POST request to leave the selected group
+        await axios.post( `http://localhost:5000/api/groups/${groupId}/leave`,  
+          {},  // No request body needed
+          {
+            headers: {
+              Authorization: `Bearer ${token}` // Attach token for auth
+            },
+        } );
+
+        await fetchGroups(); // Refresh group list after leaving
+
+        setSelectedGroup( null ); // Clear selected group from UI
+
+        toast({
+          title: 'Left group successfully',
+          status: "success",
+          duration: 3000,
+          isClosable: true
+        }); // Show success message to user
+        
+      } catch (error) {
+        console.log(error);
+        toast({
+          title: 'Error Leaving Group',
+          status: "error",
+          duration: 3000,
+          isClosable: true,
+          description: error?.response?.data?.message || "An error occurred while leaving the group."
+        });
+      }
+    };
+
+
     // TODO: logout
     // TODO: Join group
     // TODO: Leave group
@@ -287,7 +328,12 @@ const Sidebar = ( { setSelectedGroup } ) => {
                   variant={ userGroups.includes(group?._id) ? "ghost" : "solid"}
                   ml={3}
 
-                  onClick={ ()=> handleJoinGroup( group?._id) } // Call handleJoinGroup when "Join" button is clicked
+                  // Toggle join/leave based on whether user is already in the group
+                  onClick={ ()=>{
+                    userGroups.includes(group?._id) 
+                        ? handleLeaveGroup( group?._id) // Leave if already a member
+                        : handleJoinGroup( group?._id); // Join if not a member
+                  }  }
 
                   bg={ userGroups.includes(group?._id) ? "transparent" : "rgba(139, 92, 246, 0.5)"}
                   color={ userGroups.includes(group?._id) ? "purple.300" : "white"}
