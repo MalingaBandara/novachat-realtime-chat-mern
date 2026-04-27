@@ -21,7 +21,7 @@ import {
 } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import { FiLogOut, FiPlus, FiUsers, FiMessageSquare } from "react-icons/fi";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 import axios from "axios"; //? Library for making HTTP requests
 
@@ -41,6 +41,8 @@ const Sidebar = ( { setSelectedGroup } ) => {
 
    const [isAdmin, setIsAdmin] = useState( false ); //* State to track whether logged-in user is admin
 
+   const navigate = useNavigate(); // Hook from React Router that provides programmatic navigation
+   
 
    // *** =========== LIFECYCLE HOOK (RUN ON COMPONENT MOUNT) ==========
    useEffect( () => {
@@ -140,6 +142,15 @@ const Sidebar = ( { setSelectedGroup } ) => {
         }); //! Show error toast — uses server message if available, falls back to generic message
       }
     };
+
+
+     // <> ============= HANDLE USER LOGOUT (Removes user info from localStorage by clearing session data and redirecting to login page) =============
+    const handleLogout = ()=> {
+
+      localStorage.removeItem( "userInfo" ); // Remove the stored user info (token/session) from localStorage
+      navigate( "/login" ); // Redirect the user to the login page
+
+    }
 
 
     // <> ============= HANDLE JOIN GROUP (Sends join request to backend, refreshes group list, selects joined group) =============
@@ -366,9 +377,7 @@ const Sidebar = ( { setSelectedGroup } ) => {
         width="100%"
       >
         <Button
-          as={Link}
-          to="/login"
-          width="full"
+          onClick={handleLogout}
           variant="ghost"
           colorScheme="red"
           color="gray.300"
@@ -382,7 +391,7 @@ const Sidebar = ( { setSelectedGroup } ) => {
           height="45px"
           transition="all 0.2s"
         >
-          Disconnect
+          Logout
         </Button>
       </Box>
 
