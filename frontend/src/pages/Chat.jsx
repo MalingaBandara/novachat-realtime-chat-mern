@@ -4,14 +4,13 @@ import ChatArea from "../components/ChatArea";
 import { useEffect, useState } from "react";
 
 import io from "socket.io-client"; // Socket.IO client for establishing real-time WebSocket connections with the backend
-
 const ENDPOINT = "http://localhost:5000"; // Backend Socket.IO server URL ( ⚠️ update this when deploying to production)
-
 
 
 const Chat = () => {
 
    const [selectedGroup, setSelectedGroup] = useState(null); // Tracks which group/room the user has selected in the sidebar
+
 
    const [socket, setSocket] = useState(null); // Holds the active Socket.IO instance so child components can access it via props or context
 
@@ -28,6 +27,8 @@ const Chat = () => {
       setSocket( newSocket ); // Save socket instance to state for later use (sending/receiving messages)
 
    }, []);
+
+   
 
   return (
     <Flex h="100vh" bg="#050505" overflow="hidden" position="relative" fontFamily="'Inter', sans-serif">
