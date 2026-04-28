@@ -28,7 +28,7 @@ const server = http.createServer(app); //! Create HTTP server (required for Sock
 //* ============================================
 const io = socketio(server, {
     cors: {
-        origin: ["http://localhost:3000"], //? Allow frontend origin
+        origin: ["http://localhost:5173"], //? Allow frontend origin
         methods: ["GET", "POST"], //? Allowed HTTP methods
         Credentials: true //? Allow credentials (cookies, auth headers)
     },
