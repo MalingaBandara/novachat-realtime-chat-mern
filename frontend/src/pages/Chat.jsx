@@ -3,6 +3,7 @@ import Sidebar from "../components/Sidebar";
 import ChatArea from "../components/ChatArea";
 import { useEffect, useState } from "react";
 
+
 import io from "socket.io-client"; // Socket.IO client for establishing real-time WebSocket connections with the backend
 const ENDPOINT = "http://localhost:5000"; // Backend Socket.IO server URL ( ⚠️ update this when deploying to production)
 
@@ -26,9 +27,16 @@ const Chat = () => {
 
       setSocket( newSocket ); // Save socket instance to state for later use (sending/receiving messages)
 
+      //* Clean up the socket connection when the component unmounts to prevent memory leaks and unnecessary open connections
+      return () => {
+        if (newSocket){
+          newSocket.disconnect(); // Gracefully close the WebSocket connection to free up resources
+        }
+      };
+
    }, []);
 
-   
+
 
   return (
     <Flex h="100vh" bg="#050505" overflow="hidden" position="relative" fontFamily="'Inter', sans-serif">
@@ -61,7 +69,7 @@ const Chat = () => {
           <Sidebar setSelectedGroup={setSelectedGroup} />
         </Box>
         <Box flex="1">
-          <ChatArea />
+          { socket && <ChatArea selectedGroup={selectedGroup} socket={socket} /> }
         </Box>
       </Flex>
     </Flex>

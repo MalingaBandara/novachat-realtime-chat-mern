@@ -12,7 +12,7 @@ import {
 import { FiUsers, FiCircle, FiSearch, FiMoreHorizontal } from "react-icons/fi";
 import { motion } from "framer-motion";
 
-const MotionBox = motion(Box);
+const MotionBox = motion.create(Box);
 
 const UsersList = ({ users }) => {
   return (

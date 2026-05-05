@@ -13,7 +13,7 @@ import {
 import { Link, useNavigate } from "react-router-dom";
 import { FiLogIn, FiMessageSquare } from "react-icons/fi";
 import { motion } from "framer-motion";
-const MotionBox = motion(Box);
+const MotionBox = motion.create(Box);
 
 
 // +++++++++++++ IMPORTING REQUIRED HOOKS & LIBRARIES +++++++++++++++++++++

@@ -301,7 +301,7 @@ const Sidebar = ( { setSelectedGroup } ) => {
         <VStack spacing={3} align="stretch">
           {groups.map((group) => (
             <Box
-              key={group.id}
+              key={group._id}
               p={4}
               cursor="pointer"
               borderRadius="2xl"

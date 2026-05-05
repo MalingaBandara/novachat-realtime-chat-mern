@@ -25,9 +25,9 @@ import {
   FiUserCheck,
 } from "react-icons/fi";
 
-const MotionBox = motion(Box);
-const MotionFlex = motion(Flex);
-const MotionStack = motion(Stack);
+const MotionBox = motion.create(Box);
+const MotionFlex = motion.create(Flex);
+const MotionStack = motion.create(Stack);
 
 const Feature = ({ title, text, icon, badges = [], delay = 0 }) => {
   return (

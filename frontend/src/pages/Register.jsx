@@ -14,7 +14,7 @@ import {
 import { Link, useNavigate } from "react-router-dom";
 import { FiUserPlus, FiMessageSquare } from "react-icons/fi";
 import { motion } from "framer-motion";
-const MotionBox = motion(Box);
+const MotionBox = motion.create(Box);
 
 // +++++++++++++ IMPORTING REQUIRED HOOKS & LIBRARIES +++++++++++++++++++++
 import { useState } from "react"; //? React Hook for managing component state
