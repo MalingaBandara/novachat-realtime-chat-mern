@@ -405,7 +405,14 @@ const ChatArea = ( { selectedGroup, socket } ) => {
         height="100%"
         flexShrink={0}
       >
-        <UsersList users={sampleUsers} />
+    
+    {/*  Render the UsersList component ONLY if a group is currently selected(`selectedGroup` acts as a condition (truthy check)) */}
+    { selectedGroup && (
+      <UsersList 
+        users={connectedUsers} // Pass the list of currently connected users as props
+      />
+    ) }
+
       </Box>
     </Flex>
   );

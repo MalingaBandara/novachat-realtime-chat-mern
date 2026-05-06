@@ -16,8 +16,6 @@ const socketIo = (io) => {
 
         const user = socket.handshake.auth.user; //? Extract user info sent from client during handshake
 
-        console.log( "User Connected", user?.username ); //? Logs username of connected user
-
 
         //! ============================================
         //! JOIN ROOM HANDLER
@@ -52,8 +50,6 @@ const socketIo = (io) => {
         //! ============================================
         //? Triggered when a user wants to leave a specific room (group chat)
         socket.on( 'leave room', (groupId) => {
-
-            console.log(`${user?.username} leaving Group: `, groupId); //* Log user leaving action (for debugging/monitoring)
 
             //* Remove socket from the specified room
             socket.leave(groupId); //? After this, the socket will no longer receive events from this room
@@ -97,8 +93,6 @@ const socketIo = (io) => {
         //? Triggered automatically when a user disconnects (closes tab, loses connection, etc.)
         //? Responsible for cleaning up user data and notifying others in the room
         socket.on('disconnect', () => {
-
-            console.log(`${user?.username} disconnected`); //* Log disconnection event
 
             //* Check if this socket exists in connectedUsers map
             if (connectedUsers.has(socket.id)) {
