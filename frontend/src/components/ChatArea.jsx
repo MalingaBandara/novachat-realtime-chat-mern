@@ -253,7 +253,7 @@ const ChatArea = ( { selectedGroup, socket } ) => {
 
 
   //* Format Time ( Date/time value for display in the chat UI)
-  const formatTime =  (date) =>{
+  const formatTime =  (date) => {
 
     return new Date( date ).toLocaleTimeString( "en-US", { // Convert the provided date string/timestamp into a JavaScript Date object
       hour: "2-digit", // Display hour using 2 digits  (Example: 09, 10, 11)
@@ -263,7 +263,72 @@ const ChatArea = ( { selectedGroup, socket } ) => {
   };
 
 
-  //* Render Typing Indicator
+//* Render typing indicators in chat UI
+const renderTypingIndicator = () => {
+
+  if (typingUsers.size === 0) return null;  // If nobody is typing, render nothing
+  const typingUsersArray = Array.from(typingUsers); // Convert Set -> Array so we can use .map()
+
+  return typingUsersArray.map((username) => {  // Generate a typing indicator for each typing user
+
+    
+    return (//! Return JSX for each typing user
+      <Box
+        key={username} // Unique key required when rendering lists
+        alignSelf={
+          username === currentUser?.user?.username ? "flex-start" : "flex-end" }// Show current user's typing indicator on the left and Other users' indicators appear on the right
+        maxW="70%" // Limit indicator width
+      >
+        <Flex align="center"
+          bg={ username === currentUser?.user?.username ? "blue.50" : "gray.50" }// Different background color for current user vs other
+          p={2} // Padding
+          borderRadius="lg" // Rounded corners
+          gap={2} // Space between children
+        >
+
+          {/* --------------------------------
+              Current User Typing Indicator
+              Example: "You are typing..."
+             -------------------------------- */}
+          {username === currentUser?.user?.username ? (
+
+            <>
+              <Avatar size="xs" name={username}/> {/* Current user's avatar */}
+              <Flex align="center" gap={1}>
+                <Text fontSize="sm" color="gray.500" fontStyle="italic"> You are typing </Text>
+                <Flex gap={1}>  {/* Animated typing dots */}
+                  {[1, 2, 3].map((dot) => (
+                    <Box key={dot} w="3px" h="3px" borderRadius="full" bg="gray.500" />
+                  ))}
+                </Flex>
+              </Flex>
+            </>
+
+          ) : (
+
+            <>
+              {/* --------------------------------
+                  Other User Typing Indicator
+                  Example: "John is typing..."
+                 -------------------------------- */}
+              <Flex align="center" gap={1}>
+                <Text fontSize="sm" color="gray.500" fontStyle="italic"> {username} is typing </Text>
+                <Flex gap={1}>  {/* Animated typing dots */}
+                  {[1, 2, 3].map((dot) => (
+                    <Box key={dot} w="3px" h="3px" borderRadius="full" bg="gray.500" />
+                  ))}
+                </Flex>
+              </Flex>
+              <Avatar size="xs" name={username} /> {/* Avatar shown after text for other users */}
+            </>
+
+          )}
+
+        </Flex>
+      </Box>
+    );
+  });
+};
 
 
   // Sample data for demonstration
