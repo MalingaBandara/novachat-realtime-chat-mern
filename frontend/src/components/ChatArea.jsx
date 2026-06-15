@@ -252,7 +252,16 @@ const ChatArea = ( { selectedGroup, socket } ) => {
   };
 
 
-  //* Format Time
+  //* Format Time ( Date/time value for display in the chat UI)
+  const formatTime =  (date) =>{
+
+    return new Date( date ).toLocaleTimeString( "en-US", { // Convert the provided date string/timestamp into a JavaScript Date object
+      hour: "2-digit", // Display hour using 2 digits  (Example: 09, 10, 11)
+      minute: "2-digit", // Display minutes using 2 digits (Example:  05, 30, 45)
+    });
+
+  };
+
 
   //* Render Typing Indicator
 
