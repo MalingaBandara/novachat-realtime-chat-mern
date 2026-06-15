@@ -23,7 +23,7 @@ const Chat = () => {
       // Auth data is sent during connection for backend validation
       const newSocket = io ( ENDPOINT, {
         auth: { user : userInfo.user }, // Pass user details to backend via handshake
-      });
+      });3
 
       setSocket( newSocket ); // Save socket instance to state for later use (sending/receiving messages)
 

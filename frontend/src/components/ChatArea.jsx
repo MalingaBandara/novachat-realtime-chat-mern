@@ -145,7 +145,6 @@ const ChatArea = ( { selectedGroup, socket } ) => {
   //                    In practice, Chakra's useToast returns a stable reference so this won't cause extra re-runs
 
 
-
   //* Fetches message history for the selected group from the REST API.
   const fetchMessages = async ()=> {
 
@@ -165,6 +164,97 @@ const ChatArea = ( { selectedGroup, socket } ) => {
       console.log( error );
     }
   };
+
+
+  //* Send Messages
+  const sendMessage = async () => {
+
+    if (!newMessage.trim()) return; // Prevent users from sending empty messages ( trim() removes leading and trailing spaces )
+
+    try {
+
+      const token = currentUser.user.token; // Retrieve the logged-in user's JWT token (This token is required for API authentication)
+
+      // Send the message to the backend API
+      const data = await axios.post(
+        "http://localhost:5000/api/messages",
+        {
+          content: newMessage, // Message content typed by the user
+          groupId: selectedGroup?._id,// ID of the currently selected chat/group (Optional chaining (?) prevents errors if no group is selected)
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`, // Include JWT token in Authorization header
+          },
+        }
+      );
+
+      // Notify all connected clients in real-time via Socket.IO
+      socket.emit("new message", {
+        ...data, // Spread operator (...) copies all properties from the API response
+        groupId: selectedGroup?._id,
+      });
+
+      // Add the newly sent message to the local messages state and This updates the UI immediately without refreshing
+      setMessages([
+        ...messages, // Existing messages
+        data,        // Newly sent message
+      ]);
+
+      
+      setNewMessage("");// Clear the message input field after successful send
+
+    } catch (error) {
+      toast({ // Display an error notification if message sending fails
+        title: "Error sending message",
+        status: "error",
+        duration: 3000,   // Toast visible for 3 seconds
+        isClosable: true, // User can manually close it
+      });
+    }
+  };
+
+
+  //* Handle Typing (Handle user typing in the message input field)
+  const handleTyping = (e) => {
+
+    setNewMessage(e.target.value);// Update the message input state with the latest text
+
+    if (!isTyping && selectedGroup) { // If the user is not already marked as typing and a chat/group is currently selected
+
+      setIsTyping(true); // Mark current user as typing locally
+
+      // Notify other users in the group that this user started typing
+      socket.emit("typing", {
+        groupId: selectedGroup?._id,              // Current chat/group ID
+        username: currentUser?.user?.username     // Current user's username
+      });
+    }
+
+    // If a previous typing timeout exists, 
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current); // clear it to prevent premature "stop typing" events
+    }
+
+    // Start a new timer every time the user types(This creates a "typing debounce" effect)
+    typingTimeoutRef.current = setTimeout(() => {
+
+      // If the user stops typing for 2 seconds, notify other users that typing has ended
+      if (selectedGroup) {
+        socket.emit("stop typing", {
+          groupId: selectedGroup?._id,
+        });
+      }
+
+      setIsTyping(false);// Update local typing state
+
+    }, 2000); // 2000ms = 2 seconds of inactivity
+  };
+
+
+  //* Format Time
+
+  //* Render Typing Indicator
 
 
   // Sample data for demonstration
