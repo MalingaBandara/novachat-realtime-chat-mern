@@ -35,6 +35,7 @@ const ChatArea = ( { selectedGroup, socket } ) => {
   const [connectedUsers, setConnectedUsers] = useState([]); // Users currently online in this group
   const [isTyping, setIsTyping] = useState(false);      // Whether the current user is typing
   const [typingUsers, setTypingUsers] = useState(new Set()); // Set of usernames currently typing (others)
+  const [groupMembers, setGroupMembers] = useState([]); // full member list for the group
 
   const messagesEndRef = useRef(null);       // Ref to the bottom of the message list — used for auto-scroll
   const typingTimeoutRef = useRef(null);     // Ref to debounce the typing indicator reset
@@ -44,6 +45,7 @@ const ChatArea = ( { selectedGroup, socket } ) => {
   const currentUser = JSON.parse( localStorage.getItem( "userInfo" ) ||  "{}" ); // Get logged-in user info from localStorage
 
 
+  //? Effect 2: socket connection, room joining, message/typing listeners 
   // Re-fetch messages whenever the selected group or socket instance changes
   useEffect( ()=> {
 
@@ -143,6 +145,38 @@ const ChatArea = ( { selectedGroup, socket } ) => {
   // - socket         → re-runs when the socket connection is first established or reconnected
   // - toast          → included because it's referenced inside the effect (ESLint exhaustive-deps rule)
   //                    In practice, Chakra's useToast returns a stable reference so this won't cause extra re-runs
+
+
+// ===============================================
+//? Effect 2: Fetch group members when group changes
+// ===============================================
+//
+// This effect runs whenever `selectedGroup` changes.
+// Its purpose is to retrieve the latest member list
+// for the currently selected group from the backend.
+//
+useEffect(() => {
+  if (!selectedGroup) return;   // Exit early if no group is selected
+
+  const fetchGroupMembers = async () => { // Async function to fetch group members
+    try {
+      const stored = JSON.parse(localStorage.getItem("userInfo") || "{}");   // Retrieve stored user information from localStorage
+      const token = stored.user.token; // Extract JWT token for authenticated API access
+
+      const res = await axios.get( // Send request to backend to get all members of the selected group
+        `http://localhost:5000/api/groups/${selectedGroup._id}/members`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      setGroupMembers(res.data);  // Store fetched members in component state (This allows the UI to display group participants)
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  fetchGroupMembers();  // Call the function immediately when the effect runs
+}, [selectedGroup]);
+
 
 
   //* Fetches message history for the selected group from the REST API.
@@ -370,14 +404,7 @@ const renderTypingIndicator = () => {
     },
   ];
 
-  const sampleUsers = [
-    { id: 1, username: "Sarah Chen", isOnline: true },
-    { id: 2, username: "Alex Thompson", isOnline: true },
-    { id: 3, username: "John Doe", isOnline: false },
-    { id: 4, username: "Emma Watson", isOnline: true },
-    { id: 5, username: "Mike Ross", isOnline: false },
-  ];
-
+  
   return (
     <Flex h="100%" position="relative" bg="transparent">
       <Box
@@ -564,8 +591,8 @@ const renderTypingIndicator = () => {
     {/*  Render the UsersList component ONLY if a group is currently selected(`selectedGroup` acts as a condition (truthy check)) */}
     { selectedGroup && (
       <UsersList 
-        users={connectedUsers} // Pass the list of currently connected users as props
-       
+        groupMembers={groupMembers} // Complete list of members belonging to the selected group
+        connectedUsers={connectedUsers}  // Users who are currently connected/online via Socket.IO
       />
     ) }
 

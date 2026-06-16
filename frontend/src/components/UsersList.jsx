@@ -14,9 +14,16 @@ import { motion } from "framer-motion";
 
 const MotionBox = motion.create(Box);
 
-const UsersList = ({ users }) => {
+const UsersList = ({ groupMembers, connectedUsers }) => {
 
-   const currentUser = JSON.parse( localStorage.getItem( "userInfo" ) ||  "{}" ); // Get logged-in user info from localStorage
+  const currentUser = JSON.parse( localStorage.getItem( "userInfo" ) ||  "{}" ); // Get logged-in user info from localStorage
+
+  // Build a Set of online user IDs for O(1) lookup
+  const onlineIds = new Set(connectedUsers.map((u) => u._id));
+
+  // Split the full member roster into online/offline based on that Set
+  const onlineUsers = groupMembers.filter((m) => onlineIds.has(m._id));
+  const offlineUsers = groupMembers.filter((m) => !onlineIds.has(m._id));
 
   return (
     <Box
@@ -61,7 +68,7 @@ const UsersList = ({ users }) => {
             border="1px solid"
             borderColor="blue.500"
           >
-            {users.length}
+            {groupMembers.length}
           </Badge>
         </Flex>
         <Icon as={FiSearch} fontSize="18px" color="gray.400" cursor="pointer" _hover={{ color: "blue.300" }} transition="all 0.2s" />
@@ -77,12 +84,12 @@ const UsersList = ({ users }) => {
         }}
       >
         <Text fontSize="xs" fontWeight="bold" color="gray.500" textTransform="uppercase" letterSpacing="widest" mb={4} ml={2}>
-          Online — {users.filter(u => u.isOnline).length}
+          Online — {onlineUsers.length}
         </Text>
         <VStack align="stretch" spacing={3} mb={6}>
-          {users.filter(u => u.isOnline).map((user, index) => (
+          {onlineUsers.map((user, index) => (
             <MotionBox
-              key={user.id}
+              key={user._id}
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.3, delay: index * 0.05 }}
@@ -116,7 +123,7 @@ const UsersList = ({ users }) => {
                   >
                     <AvatarBadge boxSize="1.25em" bg="green.400" border="2px solid" borderColor="#0f172a" />
                   </Avatar>
-                  
+
                   <Box flex="1">
                     <Text
                       fontSize="sm"
@@ -127,7 +134,7 @@ const UsersList = ({ users }) => {
                     >
                       {user.username}
                     </Text>
-                    <Text fontSize="xs" color="gray.400">Typing...</Text>
+                    <Text fontSize="xs" color="gray.400">Active now</Text>
                   </Box>
                   <Icon as={FiMoreHorizontal} color="gray.600" />
                 </Flex>
@@ -137,12 +144,12 @@ const UsersList = ({ users }) => {
         </VStack>
 
         <Text fontSize="xs" fontWeight="bold" color="gray.500" textTransform="uppercase" letterSpacing="widest" mb={4} ml={2}>
-          Offline — {users.filter(u => !u.isOnline).length}
+          Offline — {offlineUsers.length}
         </Text>
         <VStack align="stretch" spacing={2}>
-          {users.filter(u => !u.isOnline).map((user, index) => (
+          {offlineUsers.map((user, index) => (
              <MotionBox
-             key={user.id}
+             key={user._id}
              initial={{ opacity: 0, x: 20 }}
              animate={{ opacity: 1, x: 0 }}
              transition={{ duration: 0.3, delay: index * 0.05 }}
@@ -171,7 +178,7 @@ const UsersList = ({ users }) => {
                 >
                    <AvatarBadge boxSize="1.25em" bg="gray.500" border="2px solid" borderColor="#0f172a" />
                 </Avatar>
-                
+
                 <Box flex="1" opacity={0.6}>
                   <Text
                     fontSize="sm"
@@ -181,7 +188,7 @@ const UsersList = ({ users }) => {
                   >
                     {user.username}
                   </Text>
-                  <Text fontSize="xs" color="gray.600">Last seen 2h ago</Text>
+                  <Text fontSize="xs" color="gray.600">Offline</Text>
                 </Box>
               </Flex>
             </MotionBox>

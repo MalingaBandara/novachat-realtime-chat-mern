@@ -73,6 +73,33 @@ groupRouter.get("/", protect, async (req, res) => {
 
 
 //* ============================================
+//* GET GROUP MEMBERS ROUTE
+//* ============================================
+//! GET /api/groups/:groupId/members
+//? Returns the full member list for a specific group
+//? Route is protected → only authenticated users can access
+groupRouter.get("/:groupId/members", protect, async (req, res) => {
+
+    try {
+
+        const group = await Group.findById(req.params.groupId) //* Find group by ID from request parameters
+            .populate("members", "username email"); //? Replace member IDs with user details
+
+        //* If group does not exist, return 404 error
+        if (!group) {
+            return res.status(404).json({ message: "Group not found" });
+        }
+
+        res.json(group.members); //* Send list of members as response
+
+    } catch (error) {
+        res.status(500).json({ message: "Server error", error: error.message }); //! Handle errors during fetching
+    }
+});
+
+
+
+//* ============================================
 //* JOIN GROUP ROUTE
 //* ============================================
 //! POST /api/groups/:groupId/join
@@ -144,6 +171,7 @@ groupRouter.post("/:groupId/leave", protect, async (req, res) => {
     res.status(400).json({ message: error.message }); //! Handle errors during leave operation
   }
 });
+
 
 
 module.exports = groupRouter; //* Exporting the groupRouter
