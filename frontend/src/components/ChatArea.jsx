@@ -192,7 +192,7 @@ useEffect(() => {
         headers: { Authorization: `Bearer ${token}` }
       } );
 
-      console.log( data ); // Debug: check response from backend
+      setMessages( data?.data );
       
     } catch (error) {
       console.log( error );
@@ -365,46 +365,7 @@ const renderTypingIndicator = () => {
 };
 
 
-  // Sample data for demonstration
-  const sampleMessages = [
-    {
-      id: 1,
-      content: "Hey team! Just pushed the new stellar updates to staging.",
-      sender: { username: "Sarah Chen" },
-      createdAt: "10:30 AM",
-      isCurrentUser: false,
-    },
-    {
-      id: 2,
-      content: "Great work! The new glassmorphism features look amazing 🚀",
-      sender: { username: "Alex Thompson" },
-      createdAt: "10:31 AM",
-      isCurrentUser: false,
-    },
-    {
-      id: 3,
-      content: "Thanks! I'll prep the deployment pipeline for tomorrow's release.",
-      sender: { username: "You" },
-      createdAt: "10:32 AM",
-      isCurrentUser: true,
-    },
-    {
-      id: 4,
-      content: "Awesome, I'll review the PR right after this standup.",
-      sender: { username: "Sarah Chen" },
-      createdAt: "10:35 AM",
-      isCurrentUser: false,
-    },
-    {
-      id: 5,
-      content: "Perfect. Everything is looking good on my end.",
-      sender: { username: "You" },
-      createdAt: "10:36 AM",
-      isCurrentUser: true,
-    },
-  ];
 
-  
   return (
     <Flex h="100%" position="relative" bg="transparent">
       <Box
@@ -460,13 +421,13 @@ const renderTypingIndicator = () => {
                 },
               }}
             >
-              {sampleMessages.map((message, index) => (
+              {messages.map((message, index) => (
                 <MotionBox
-                  key={message.id}
+                  key={message._id}
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.3, delay: index * 0.1 }}
-                  alignSelf={message.isCurrentUser ? "flex-end" : "flex-start"}
+                  alignSelf={message.sender._id === currentUser?.user?._id ? "flex-end" : "flex-start"}
                   maxW="75%"
                 >
                   <Flex direction="column" gap={1.5}>
@@ -474,38 +435,39 @@ const renderTypingIndicator = () => {
                       align="center"
                       mb={1}
                       justifyContent={
-                        message.isCurrentUser ? "flex-end" : "flex-start"
+                        message.sender._id === currentUser?.user?._id ? "flex-end" : "flex-start"
                       }
                       gap={3}
                     >
-                      {message.isCurrentUser ? (
+                      {message.sender._id === currentUser?.user?._id ? (
                         <>
+                        <Avatar size="sm" name={message.sender.username} bgGradient="linear(to-br, purple.400, blue.400)" border="2px solid" borderColor="rgba(255,255,255,0.1)" />
                           <Text fontSize="xs" color="gray.400" fontWeight="medium">
-                            {message.createdAt}
+                           You  •  { formatTime(message.createdAt) }
                           </Text>
                         </>
                       ) : (
                         <>
                           <Avatar size="sm" name={message.sender.username} bgGradient="linear(to-br, purple.400, blue.400)" border="2px solid" borderColor="rgba(255,255,255,0.1)" />
                           <Text fontSize="sm" color="purple.300" fontWeight="bold">
-                            {message.sender.username}
+                            {message.sender.username} •
                           </Text>
                           <Text fontSize="xs" color="gray.500" fontWeight="medium">
-                            {message.createdAt}
+                            { formatTime(message.createdAt) }
                           </Text>
                         </>
                       )}
                     </Flex>
 
                     <Box
-                      bg={message.isCurrentUser ? "linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)" : "rgba(30, 41, 59, 0.7)"}
+                      bg={message.sender._id === currentUser?.user?._id ? "linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)" : "rgba(30, 41, 59, 0.7)"}
                       color="white"
                       p={4}
                       borderRadius="2xl"
-                      borderBottomRightRadius={message.isCurrentUser ? "sm" : "2xl"}
-                      borderTopLeftRadius={message.isCurrentUser ? "2xl" : "sm"}
-                      boxShadow={message.isCurrentUser ? "0 10px 25px -5px rgba(139, 92, 246, 0.4)" : "0 4px 15px rgba(0,0,0,0.1)"}
-                      border={message.isCurrentUser ? "none" : "1px solid"}
+                      borderBottomRightRadius={message.sender._id === currentUser?.user?._id ? "sm" : "2xl"}
+                      borderTopLeftRadius={message.sender._id === currentUser?.user?._id ? "2xl" : "sm"}
+                      boxShadow={message.sender._id === currentUser?.user?._id ? "0 10px 25px -5px rgba(139, 92, 246, 0.4)" : "0 4px 15px rgba(0,0,0,0.1)"}
+                      border={message.sender._id === currentUser?.user?._id ? "none" : "1px solid"}
                       borderColor="whiteAlpha.100"
                       backdropFilter="blur(10px)"
                     >
