@@ -15,6 +15,9 @@ import { motion } from "framer-motion";
 const MotionBox = motion.create(Box);
 
 const UsersList = ({ users }) => {
+
+   const currentUser = JSON.parse( localStorage.getItem( "userInfo" ) ||  "{}" ); // Get logged-in user info from localStorage
+
   return (
     <Box
       h="100%"
@@ -195,7 +198,7 @@ const UsersList = ({ users }) => {
             </Avatar>
             <Box>
               <Text fontSize="sm" fontWeight="bold" color="white">You</Text>
-              <Text fontSize="xs" color="gray.400">#NovaAdmin</Text>
+              <Text fontSize="xs" color="gray.400">{currentUser?.user?.username}</Text>
             </Box>
           </Flex>
           <Icon as={FiCircle} color="purple.400" fontSize="12px" />
