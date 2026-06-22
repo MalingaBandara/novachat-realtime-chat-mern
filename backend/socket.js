@@ -117,7 +117,7 @@ const socketIo = (io) => {
         //? Provides real-time feedback when a user is typing in a group chat
 
         //* Triggered when a user starts typing
-        socket.on('typing', ({ groupId, username }) => {
+        socket.on('user typing', ({ groupId, username }) => {
 
             //* Notify all other users in the room that this user is typing
             socket.to(groupId).emit("user typing", { username }); //? socket.to() → sends to everyone EXCEPT the current user
@@ -126,10 +126,10 @@ const socketIo = (io) => {
 
 
         //* Triggered when a user stops typing
-        socket.on('stop typing', ({ groupId }) => {
+        socket.on('user stop typing', ({ groupId, username }) => {
 
             //* Notify all other users in the room to remove typing indicator
-            socket.to(groupId).emit("user stop typing", { username: user?.username }); //? Uses server-side user info for consistency
+            socket.to(groupId).emit("user stop typing", {username}); //? Uses server-side user info for consistency
 
         });
         //! END: TYPING INDICATOR

@@ -28,7 +28,7 @@ const MotionBox = motion.create(Box);
  *  - selectedGroup: the currently active group/channel object ({ _id, name, ... })
  *  - socket: the Socket.IO client instance for real-time events
 */
-const ChatArea = ( { selectedGroup, socket } ) => {
+const ChatArea = ( { selectedGroup, socket, setSelectedGroup  } ) => {
   
   const [messages, setMessages] = useState([]);         // Fetched messages for the selected group
   const [newMessage, setNewMessage] = useState("");      // Controlled value for the message input
@@ -37,20 +37,50 @@ const ChatArea = ( { selectedGroup, socket } ) => {
   const [typingUsers, setTypingUsers] = useState(new Set()); // Set of usernames currently typing (others)
   const [groupMembers, setGroupMembers] = useState([]); // full member list for the group
 
-  const messagesEndRef = useRef(null);       // Ref to the bottom of the message list — used for auto-scroll
   const typingTimeoutRef = useRef(null);     // Ref to debounce the typing indicator reset
   
+  const messagesContainerRef = useRef(null); // Ref to the bottom of the message list — used for auto-scroll
+
   const toast = useToast(); // Chakra UI toast for error/success notifications
 
   const currentUser = JSON.parse( localStorage.getItem( "userInfo" ) ||  "{}" ); // Get logged-in user info from localStorage
 
+  const currentUserId = currentUser?.user?._id;
 
-  //? Effect 2: socket connection, room joining, message/typing listeners 
+    // ✅ Check membership: Determine if the current user is a member of the selected group
+   const isMember = groupMembers.some(
+    (m) => m._id === currentUserId
+  );
+
+
+  //? =================Effect 1: FETCH MEMBERS =================
+  useEffect(() => {
+    if (!selectedGroup) return;
+
+    const fetchGroupMembers = async () => {
+      try {
+        const token = currentUser.user.token;
+
+        const res = await axios.get(
+          `http://localhost:5000/api/groups/${selectedGroup._id}/members`,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+
+        setGroupMembers(res.data);
+      } catch (err) {
+        console.log(err);
+      }
+    };
+
+    fetchGroupMembers();
+  }, [selectedGroup]);
+
+
+  //? =================Effect 2: socket connection, room joining, message/typing listeners =================
   // Re-fetch messages whenever the selected group or socket instance changes
   useEffect( ()=> {
 
-    //! Guard: skip if no group is selected or socket isn't ready yet
-    if( selectedGroup && socket ) { //! Only fetch messages if:  { A group is selected (avoid calling API with undefined group), Socket is initialized (ensures real-time connection is ready)
+    if (!selectedGroup || !socket || !isMember) return;
       
       fetchMessages();  // Pull message history for this group from the REST API
 
@@ -98,19 +128,20 @@ const ChatArea = ( { selectedGroup, socket } ) => {
           status: "info",
           duration: 3000,
           isClosable: true,
+           position: "top-right",
         });
       });
 
       // Another user started typing — add their username to the Set.
       // A Set is used instead of an array to automatically handle duplicate events
       // (e.g. rapid keystrokes firing 'typing' multiple times for the same user).
-      socket.on('typing', ({ username }) => {
+      socket.on('user typing', ({ username }) => {
         setTypingUsers((prev) => new Set(prev).add(username));
       });
 
       // Another user stopped typing — remove only their username from the Set.
       // We must create a new Set (not mutate) to trigger a React re-render.
-      socket.on('stop typing', ({ username }) => {
+      socket.on('user stop typing', ({ username }) => {
         setTypingUsers((prev) => {
           const newSet = new Set(prev);
           newSet.delete(username);
@@ -128,19 +159,19 @@ const ChatArea = ( { selectedGroup, socket } ) => {
         // Remove all listeners registered in this effect.
         // Critical: without this, switching groups would stack duplicate listeners
         // from the previous and new group, causing messages to be appended multiple times.
+        socket.off("message received");
         socket.off('users in room');
         socket.off('user joined');
         socket.off('user left');
         socket.off('notification');
-        socket.off('typing');
-        socket.off('stop typing');
+        socket.off('user typing');
+        socket.off('user stop typing');
 
         // Note: 'message received' is intentionally not removed here because
         // it doesn't need a group-specific scope — remove it if you add it above.
       };
-  }
 
-  }, [ selectedGroup, socket, toast ] ); // Dependency array:
+  }, [ selectedGroup, socket, toast, isMember ] ); // Dependency array:
   // - selectedGroup  → re-runs when user switches to a different group/channel
   // - socket         → re-runs when the socket connection is first established or reconnected
   // - toast          → included because it's referenced inside the effect (ESLint exhaustive-deps rule)
@@ -148,39 +179,24 @@ const ChatArea = ( { selectedGroup, socket } ) => {
 
 
 // ===============================================
-//? Effect 2: Fetch group members when group changes
+//? Effect 3: Auto-scroll to the bottom whenever messages change
 // ===============================================
 //
-// This effect runs whenever `selectedGroup` changes.
-// Its purpose is to retrieve the latest member list
-// for the currently selected group from the backend.
+// Runs after every render where `messages` has changed (new message sent
+// or received). Scrolls the bottom sentinel element into view smoothly.
 //
 useEffect(() => {
-  if (!selectedGroup) return;   // Exit early if no group is selected
-
-  const fetchGroupMembers = async () => { // Async function to fetch group members
-    try {
-      const stored = JSON.parse(localStorage.getItem("userInfo") || "{}");   // Retrieve stored user information from localStorage
-      const token = stored.user.token; // Extract JWT token for authenticated API access
-
-      const res = await axios.get( // Send request to backend to get all members of the selected group
-        `http://localhost:5000/api/groups/${selectedGroup._id}/members`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-
-      setGroupMembers(res.data);  // Store fetched members in component state (This allows the UI to display group participants)
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  fetchGroupMembers();  // Call the function immediately when the effect runs
-}, [selectedGroup]);
+  if (messagesContainerRef.current) {
+    messagesContainerRef.current.scrollTop =
+      messagesContainerRef.current.scrollHeight;
+  }
+}, [messages]);
 
 
 
   //* Fetches message history for the selected group from the REST API.
   const fetchMessages = async ()=> {
+    if (!isMember) return;
 
     const currentUser = JSON.parse( localStorage.getItem( "userInfo" ) || {} ); // Get stored user info (includes token)
     const token = currentUser.user.token; // Extract JWT token for authorization
@@ -188,12 +204,13 @@ useEffect(() => {
     try {
       
        // API call to get messages for selected group
-      const data =  await axios.get( `http://localhost:5000/api/messages/${selectedGroup?._id}` , {
+      const  data  =  await axios.get( `http://localhost:5000/api/messages/${selectedGroup?._id}` , {
         headers: { Authorization: `Bearer ${token}` }
       } );
 
-      setMessages( data?.data );
-      
+      setMessages( data?.data ); // Store messages in state to render in the UI
+
+
     } catch (error) {
       console.log( error );
     }
@@ -203,6 +220,8 @@ useEffect(() => {
   //* Send Messages
   const sendMessage = async () => {
 
+     if (!isMember) return;
+
     if (!newMessage.trim()) return; // Prevent users from sending empty messages ( trim() removes leading and trailing spaces )
 
     try {
@@ -210,7 +229,7 @@ useEffect(() => {
       const token = currentUser.user.token; // Retrieve the logged-in user's JWT token (This token is required for API authentication)
 
       // Send the message to the backend API
-      const data = await axios.post(
+      const response  = await axios.post(
         "http://localhost:5000/api/messages",
         {
           content: newMessage, // Message content typed by the user
@@ -223,20 +242,31 @@ useEffect(() => {
         }
       );
 
+      const sentMessage = response.data; // actual message object from backend
+
       // Notify all connected clients in real-time via Socket.IO
       socket.emit("new message", {
-        ...data, // Spread operator (...) copies all properties from the API response
+        ...sentMessage, // Spread operator (...) copies all properties from the API response
         groupId: selectedGroup?._id,
       });
 
       // Add the newly sent message to the local messages state and This updates the UI immediately without refreshing
-      setMessages([
-        ...messages, // Existing messages
-        data,        // Newly sent message
-      ]);
-
+    setMessages((prev) => [...prev, sentMessage]);
       
       setNewMessage("");// Clear the message input field after successful send
+
+      // Stop the typing indicator immediately after sending, so it doesn't
+      // linger for the remainder of the 2s debounce window.
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+      }
+      if (selectedGroup) {
+        socket.emit("user stop typing", {
+          groupId: selectedGroup?._id,
+          username: currentUser?.user?.username,
+        });
+      }
+      setIsTyping(false);
 
     } catch (error) {
       toast({ // Display an error notification if message sending fails
@@ -252,6 +282,8 @@ useEffect(() => {
   //* Handle Typing (Handle user typing in the message input field)
   const handleTyping = (e) => {
 
+    if (!isMember) return;
+
     setNewMessage(e.target.value);// Update the message input state with the latest text
 
     if (!isTyping && selectedGroup) { // If the user is not already marked as typing and a chat/group is currently selected
@@ -259,7 +291,7 @@ useEffect(() => {
       setIsTyping(true); // Mark current user as typing locally
 
       // Notify other users in the group that this user started typing
-      socket.emit("typing", {
+      socket.emit("user typing", {
         groupId: selectedGroup?._id,              // Current chat/group ID
         username: currentUser?.user?.username     // Current user's username
       });
@@ -275,8 +307,9 @@ useEffect(() => {
 
       // If the user stops typing for 2 seconds, notify other users that typing has ended
       if (selectedGroup) {
-        socket.emit("stop typing", {
+        socket.emit("user stop typing", {
           groupId: selectedGroup?._id,
+          username: currentUser?.user?.username, // needed so the server/clients know whose indicator to clear
         });
       }
 
@@ -376,11 +409,25 @@ const renderTypingIndicator = () => {
         maxW={`calc(100% - 280px)`}
       >
 
-        { selectedGroup ? ( // If a group is selected, show the chat area
+        { selectedGroup && isMember ? ( // If a group is selected, show the chat area
           <>
 
             {/* Chat Header */}
             <Flex px={6} py={5} bg="rgba(15, 23, 42, 0.4)" borderBottom="1px solid" borderColor="whiteAlpha.100" align="center" backdropFilter="blur(16px)" zIndex={2}>
+              <Button
+                display={{ base: "inline-flex", md: "none" }}
+                variant="ghost"
+                mr={2}
+                onClick={() => setSelectedGroup(null)}
+              >
+                ←
+              </Button>
+              <Icon
+                as={FiMessageCircle}
+                fontSize="24px"
+                color="blue.500"
+                mr={3}
+              />
               <Box p={2.5} bg="rgba(255,255,255,0.05)" rounded="xl" mr={4} border="1px solid" borderColor="whiteAlpha.100">
                 <Icon as={FiHash} fontSize="20px" color="purple.400" />
               </Box>
@@ -403,7 +450,7 @@ const renderTypingIndicator = () => {
             </Flex>
 
             {/* Messages Area */}
-            <VStack flex="1" overflowY="auto" spacing={6} align="stretch"px={8} py={6} position="relative"
+            <VStack flex="1" overflowY="auto" spacing={6} align="stretch"px={8} py={6} position="relative" ref={messagesContainerRef}
               bg="rgba(0,0,0,0.2)"
               sx={{
                 "&::-webkit-scrollbar": {
@@ -443,18 +490,14 @@ const renderTypingIndicator = () => {
                         <>
                         <Avatar size="sm" name={message.sender.username} bgGradient="linear(to-br, purple.400, blue.400)" border="2px solid" borderColor="rgba(255,255,255,0.1)" />
                           <Text fontSize="xs" color="gray.400" fontWeight="medium">
-                           You  •  { formatTime(message.createdAt) }
-                          </Text>
+                           You  •  { formatTime(message.createdAt) } </Text>
                         </>
                       ) : (
                         <>
                           <Avatar size="sm" name={message.sender.username} bgGradient="linear(to-br, purple.400, blue.400)" border="2px solid" borderColor="rgba(255,255,255,0.1)" />
                           <Text fontSize="sm" color="purple.300" fontWeight="bold">
-                            {message.sender.username} •
-                          </Text>
-                          <Text fontSize="xs" color="gray.500" fontWeight="medium">
-                            { formatTime(message.createdAt) }
-                          </Text>
+                            {message.sender.username} • </Text>
+                          <Text fontSize="xs" color="gray.500" fontWeight="medium"> { formatTime(message.createdAt) } </Text>
                         </>
                       )}
                     </Flex>
@@ -476,13 +519,22 @@ const renderTypingIndicator = () => {
                   </Flex>
                 </MotionBox>
               ))}
+
+              <Flex>
+              {/* Typing indicator(s) — rendered below the last message */}
+              {renderTypingIndicator()}
+              </Flex>
+
             </VStack>
+
 
             {/* Message Input */}
             <Box p={6} bg="rgba(15, 23, 42, 0.5)" borderTop="1px solid" borderColor="whiteAlpha.100" backdropFilter="blur(16px)"position="relative" zIndex="1">
               <InputGroup size="lg" position="relative">
                 <Input
-                  placeholder="Message #Development Team..."
+                  value={newMessage}
+                  onChange={handleTyping}
+                  placeholder={`Message ${selectedGroup.name} Team...`}
                   pl={6}
                   pr="4.5rem"
                   bg="rgba(0,0,0,0.3)"
@@ -502,6 +554,11 @@ const renderTypingIndicator = () => {
                   }}
                   _placeholder={{ color: "gray.500", fontSize: "md" }}
                   transition="all 0.3s"
+                  onKeyPress={(e) => {
+                    if (e.key === "Enter") {
+                      sendMessage();
+                    }
+                  }}
                 />
                 <InputRightElement width="4.5rem" height="100%">
                   <Button
@@ -517,6 +574,7 @@ const renderTypingIndicator = () => {
                     }}
                     transition="all 0.2s"
                     p={0}
+                     onClick={sendMessage}
                   >
                     <Icon as={FiSend} fontSize="18px" />
                   </Button>
@@ -555,6 +613,8 @@ const renderTypingIndicator = () => {
       <UsersList 
         groupMembers={groupMembers} // Complete list of members belonging to the selected group
         connectedUsers={connectedUsers}  // Users who are currently connected/online via Socket.IO
+        typingUsers={typingUsers} // Users who are currently typing
+        isMember={isMember}
       />
     ) }
 

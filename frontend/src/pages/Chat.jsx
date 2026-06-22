@@ -23,7 +23,7 @@ const Chat = () => {
       // Auth data is sent during connection for backend validation
       const newSocket = io ( ENDPOINT, {
         auth: { user : userInfo.user }, // Pass user details to backend via handshake
-      });3
+      });
 
       setSocket( newSocket ); // Save socket instance to state for later use (sending/receiving messages)
 
@@ -64,12 +64,12 @@ const Chat = () => {
 
       {/* Main Container */}
       <Flex w="100%" h="100%" zIndex={1} bg="rgba(0,0,0,0.2)" backdropFilter="blur(20px)">
-        <Box w="300px" borderRight="1px solid" borderColor="whiteAlpha.100" bg="rgba(15, 23, 42, 0.4)">
+        <Box w="300px" borderRight="1px solid" borderColor="whiteAlpha.100" bg="rgba(15, 23, 42, 0.4)" display={{ base: selectedGroup ? "none" : "block", md: "block" }}>
           {/* Pass function to update selected group */}
           <Sidebar setSelectedGroup={setSelectedGroup} />
         </Box>
-        <Box flex="1">
-          { socket && <ChatArea selectedGroup={selectedGroup} socket={socket} /> }
+        <Box flex="1"  display={{ base: selectedGroup ? "none" : "block", md: "block" }}>
+          { socket && <ChatArea selectedGroup={selectedGroup} socket={socket} setSelectedGroup={setSelectedGroup} /> }
         </Box>
       </Flex>
     </Flex>

@@ -85,10 +85,12 @@ groupRouter.get("/:groupId/members", protect, async (req, res) => {
         const group = await Group.findById(req.params.groupId) //* Find group by ID from request parameters
             .populate("members", "username email"); //? Replace member IDs with user details
 
+            
         //* If group does not exist, return 404 error
         if (!group) {
             return res.status(404).json({ message: "Group not found" });
         }
+
 
         res.json(group.members); //* Send list of members as response
 

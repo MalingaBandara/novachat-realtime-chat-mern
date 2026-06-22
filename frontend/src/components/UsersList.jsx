@@ -14,12 +14,14 @@ import { motion } from "framer-motion";
 
 const MotionBox = motion.create(Box);
 
-const UsersList = ({ groupMembers, connectedUsers }) => {
+const UsersList = ({ groupMembers, connectedUsers,  typingUsers, isMember }) => {
 
   const currentUser = JSON.parse( localStorage.getItem( "userInfo" ) ||  "{}" ); // Get logged-in user info from localStorage
 
   // Build a Set of online user IDs for O(1) lookup
-  const onlineIds = new Set(connectedUsers.map((u) => u._id));
+  const onlineIds = new Set(
+    connectedUsers.map((u) => u?._id).filter(Boolean)
+  );
 
   // Split the full member roster into online/offline based on that Set
   const onlineUsers = groupMembers.filter((m) => onlineIds.has(m._id));
@@ -68,14 +70,15 @@ const UsersList = ({ groupMembers, connectedUsers }) => {
             border="1px solid"
             borderColor="blue.500"
           >
-            {groupMembers.length}
+            { isMember ? groupMembers.length : "Restricted" }
           </Badge>
         </Flex>
         <Icon as={FiSearch} fontSize="18px" color="gray.400" cursor="pointer" _hover={{ color: "blue.300" }} transition="all 0.2s" />
       </Flex>
 
       {/* Users List */}
-      <Box flex="1" overflowY="auto" p={5}
+      { isMember ? (
+        <Box flex="1" overflowY="auto" p={5}
         sx={{
           "&::-webkit-scrollbar": { width: "4px" },
           "&::-webkit-scrollbar-track": { background: "transparent" },
@@ -134,7 +137,29 @@ const UsersList = ({ groupMembers, connectedUsers }) => {
                     >
                       {user.username}
                     </Text>
-                    <Text fontSize="xs" color="gray.400">Active now</Text>
+                    <Text
+                      fontSize="xs"
+                      color={
+                        typingUsers?.has(user.username)
+                          ? "green.300"
+                          : "gray.400"
+                      }
+                    >
+                      {typingUsers?.has(user.username)
+                        ? <Flex align="center" gap={1}>
+                          <Text
+                            fontSize="xs"
+                            color="green.300"
+                          >
+                            Typing
+                          </Text>
+
+                          <Box w="3px" h="3px" bg="green.300" borderRadius="full" />
+                          <Box w="3px" h="3px" bg="green.300" borderRadius="full" />
+                          <Box w="3px" h="3px" bg="green.300" borderRadius="full" />
+                        </Flex>
+                        : "Active now"}
+                    </Text>
                   </Box>
                   <Icon as={FiMoreHorizontal} color="gray.600" />
                 </Flex>
@@ -195,6 +220,12 @@ const UsersList = ({ groupMembers, connectedUsers }) => {
           ))}
         </VStack>
       </Box>
+      ) : (
+        <Flex flex="1" align="center" justify="center" direction="column" gap={4}>
+          <Icon as={FiUsers} fontSize="40px" color="blue.400" />
+        </Flex>
+       )
+        };
 
       {/* Current User Footer */}
       <Box p={4} borderTop="1px solid" borderColor="whiteAlpha.100" bg="rgba(0,0,0,0.3)">

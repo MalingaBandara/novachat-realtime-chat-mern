@@ -29,7 +29,7 @@ messageRouter.post("/", protect, async (req, res) => {
         const populatedMessage = await Message.findById(message._id)
             .populate("sender", "username email");
 
-        res.status(201).json({ populatedMessage });//* Send created message as response
+        res.status(201).json(populatedMessage);//* Send created message as response
 
     } catch (error) {
         res.status(500).json({ error: error.message }); //! Handle server or database errors
